@@ -1,0 +1,25 @@
+mkdir build
+cd build
+
+cmake -DCMAKE_BUILD_TYPE=Release \
+    -DTOOLCHAIN_PREFIX="/usr" \
+    -DCMAKE_TOOLCHAIN_FILE="../cmake/toolchain-arm-none-eabi.cmake" \
+    -DAPPLICATION="LoRaMac" \
+    -DSUB_PROJECT="periodic-uplink-lpp" \
+    -DCLASSB_ENABLED="ON" \
+    -DACTIVE_REGION="LORAMAC_REGION_EU868" \
+    -DREGION_EU868="OFF" \
+    -DREGION_US915="OFF" \
+    -DREGION_CN779="OFF" \
+    -DREGION_EU433="OFF" \
+    -DREGION_AU915="ON" \
+    -DREGION_AS923="OFF" \
+    -DREGION_CN470="OFF" \
+    -DREGION_KR920="OFF" \
+    -DREGION_IN865="OFF" \
+    -DREGION_RU864="OFF" \
+    -DBOARD="RAK4270" \
+    -DMBED_RADIO_SHIELD="SX1262MBXCAS" \
+    -DSECURE_ELEMENT="SOFT_SE" \
+    -DSECURE_ELEMENT_PRE_PROVISIONED="ON" \
+    -DUSE_RADIO_DEBUG="ON" ..
