@@ -26,7 +26,6 @@ enable_language(ASM)
 list(APPEND ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/gpio-board.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/i2c-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/pinName-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/pinName-ioe.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/rtc-board.c"
@@ -59,7 +58,7 @@ list(APPEND ${PROJECT_NAME}_SOURCES
 
 add_library(${PROJECT_NAME} OBJECT EXCLUDE_FROM_ALL ${${PROJECT_NAME}_SOURCES})
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC -DUSE_HAL_DRIVER -DSTM32L072xx)
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DUSE_HAL_DRIVER -DSTM32L071xx)
 
 # Add define if debbuger support is enabled
 target_compile_definitions(${PROJECT_NAME} PUBLIC $<$<BOOL:${USE_DEBUGGER}>:USE_DEBUGGER>)

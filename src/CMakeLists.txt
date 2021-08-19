@@ -183,6 +183,18 @@ elseif(BOARD STREQUAL B-L072Z-LRWAN1)
 
     # Configure radio
     set(RADIO sx1276 CACHE INTERNAL "Radio sx1276 selected")
+
+elseif(BOARD STREQUAL RAK4270)
+    # Configure toolchain for NucleoL073
+    set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/boards/RAK4270/cmsis/arm-gcc/stm32l071xx_flash.ld)
+    include(stm32l0)
+
+    # Build platform specific board implementation
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/boards/RAK4270)
+
+    # Configure radio
+    set(RADIO sx126x CACHE INTERNAL "Radio sx126x selected")
+
 endif()
 
 #---------------------------------------------------------------------------------------
