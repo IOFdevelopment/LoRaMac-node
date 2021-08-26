@@ -38,6 +38,7 @@ extern "C"
 {
 #endif
 
+
 /*!
  * Defines the time required for the TCXO to wakeup [ms].
  */
@@ -55,74 +56,37 @@ extern "C"
 #define RADIO_MOSI                                  PA_7
 #define RADIO_MISO                                  PA_6
 #define RADIO_SCLK                                  PA_5
+#define RADIO_NSS                                   PA_4
 
-#if defined( SX1261MBXBAS ) || defined( SX1262MBXCAS ) || defined( SX1262MBXDAS )
+#define RADIO_BUSY                                  PB_0
+#define RADIO_DIO_1                                 PB_1
 
-#define RADIO_NSS                                   PA_8
-#define RADIO_BUSY                                  PB_3
-#define RADIO_DIO_1                                 PB_4
+#define RADIO_ANT_SWITCH_POWER                      PA_11
+// #define RADIO_FREQ_SEL                              PA_1
+// #define RADIO_XTAL_SEL                              PB_0
+// #define RADIO_DEVICE_SEL                            PA_4
 
-#define RADIO_ANT_SWITCH_POWER                      PA_9
-#define RADIO_FREQ_SEL                              PA_1
-#define RADIO_XTAL_SEL                              PB_0
-#define RADIO_DEVICE_SEL                            PA_4
-
-#define LED_1                                       PC_1
-#define LED_2                                       PC_0
+// #define LED_1                                       PC_1
+// #define LED_2                                       PC_0
 
 // Debug pins definition.
-#define RADIO_DBG_PIN_TX                            PB_6
-#define RADIO_DBG_PIN_RX                            PC_7
-
-#elif defined( LR1110MB1XXS )
-
-#define RADIO_NSS                                   PA_8
-#define RADIO_BUSY                                  PB_3
-#define RADIO_DIO_1                                 PB_4
-
-#define LED_1                                       PC_1
-#define LED_2                                       PC_0
-
-// Debug pins definition.
-#define RADIO_DBG_PIN_TX                            PB_6
-#define RADIO_DBG_PIN_RX                            PC_7
-
-#elif defined( SX1272MB2DAS) || defined( SX1276MB1LAS ) || defined( SX1276MB1MAS )
-
-#define RADIO_NSS                                   PB_6
-
-#define RADIO_DIO_0                                 PA_10
-#define RADIO_DIO_1                                 PB_3
-#define RADIO_DIO_2                                 PB_5
-#define RADIO_DIO_3                                 PB_4
-#define RADIO_DIO_4                                 PA_9
-#define RADIO_DIO_5                                 PC_7
-
-#define RADIO_ANT_SWITCH                            PC_1
-
-#define LED_1                                       NC
-#define LED_2                                       NC
-
-// Debug pins definition.
-#define RADIO_DBG_PIN_TX                            PB_0
-#define RADIO_DBG_PIN_RX                            PA_4
-
-#endif
+#define RADIO_DBG_PIN_TX                            PB_1
+#define RADIO_DBG_PIN_RX                            PC_2
 
 #define OSC_LSE_IN                                  PC_14
 #define OSC_LSE_OUT                                 PC_15
 
-#define OSC_HSE_IN                                  PH_0
-#define OSC_HSE_OUT                                 PH_1
+// #define OSC_HSE_IN                                  PH_0
+// #define OSC_HSE_OUT                                 PH_1
 
 #define SWCLK                                       PA_14
 #define SWDAT                                       PA_13
 
-#define I2C_SCL                                     PB_8
-#define I2C_SDA                                     PB_9
+#define I2C_SCL                                     PB_6
+#define I2C_SDA                                     PB_7
 
-#define UART_TX                                     PA_2
-#define UART_RX                                     PA_3
+#define UART_TX                                     PA_9
+#define UART_RX                                     PA_10
 
 #ifdef __cplusplus
 }

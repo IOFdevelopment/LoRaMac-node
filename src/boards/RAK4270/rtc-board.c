@@ -48,7 +48,7 @@
 #define PREDIV_A                                    ( 1 << ( 15 - N_PREDIV_S ) ) - 1
 
 // Sub-second mask definition
-#define ALARM_SUBSECOND_MASK                        ( N_PREDIV_S << RTC_ALRMASSR_MASKSS_Pos )
+#define ALARM_SUBSECOND_MASK                        ( N_PREDIV_S << 24U ) //RTC_ALRMASSR_MASKSS_Pos
 
 // RTC Time base in us
 #define USEC_NUMBER                                 1000000

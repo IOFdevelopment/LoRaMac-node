@@ -1,3 +1,5 @@
+token git: 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
+
 mkdir build
 cd build
 

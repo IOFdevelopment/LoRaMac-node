@@ -96,6 +96,15 @@
  * @{
  */
 /* Bits position in  in the CFGR register */
+#define RCC_CFGR_PLLMUL_Pos 18U
+#define RCC_CFGR_PLLDIV_Pos 22U
+#define RCC_CFGR_HPRE_Pos 4U
+#define RCC_CFGR_PPRE1_Pos 8U
+#define RCC_CFGR_PPRE2_Pos 11U
+
+#define RCC_ICSCR_MSIRANGE_Pos 13U
+#define RCC_ICSCR_MSITRIM_Pos 24U
+
 #define RCC_CFGR_PLLMUL_BITNUMBER         RCC_CFGR_PLLMUL_Pos
 #define RCC_CFGR_PLLDIV_BITNUMBER         RCC_CFGR_PLLDIV_Pos
 #define RCC_CFGR_HPRE_BITNUMBER           RCC_CFGR_HPRE_Pos

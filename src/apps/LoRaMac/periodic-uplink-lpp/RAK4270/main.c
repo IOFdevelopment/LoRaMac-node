@@ -4,8 +4,9 @@
 #include "gpio.h"
 #include "LoRaMac.h"
 #include "Commissioning.h"
+#include "radio.h"
 //#warning "Check this include"
-#include "NvmCtxMgmt.h"     //Check this include
+//#include "NvmCtxMgmt.h"     //Check this include
 
 #ifndef ACTIVE_REGION
 
@@ -60,6 +61,8 @@ static bool AppLedStateOn = false;
 static TimerEvent_t Led1Timer;
 
 static TimerEvent_t Led3Timer;
+
+//Radio_s Radio;
 
 static bool NextTx = true;
 
@@ -282,7 +285,7 @@ static bool SendFrame( void )
             mcpsReq.Req.Confirmed.fPort = AppPort;
             mcpsReq.Req.Confirmed.fBuffer = AppDataBuffer;
             mcpsReq.Req.Confirmed.fBufferSize = AppDataSize;
-            mcpsReq.Req.Confirmed.NbTrials = 8;
+            //mcpsReq.Req.Confirmed.NbTrials = 8;
             mcpsReq.Req.Confirmed.Datarate = LORAWAN_DEFAULT_DATARATE;
         }
     }
@@ -630,7 +633,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         else if( mcpsIndication->BufferSize == 7 )
                         {
                             MlmeReq_t mlmeReq;
-                            mlmeReq.Type = MLME_TXCW_1;
+                            mlmeReq.Type = MLME_TXCW; //MLME_TXCW_1
                             mlmeReq.Req.TxCw.Timeout = ( uint16_t )( ( mcpsIndication->Buffer[1] << 8 ) | mcpsIndication->Buffer[2] );
                             mlmeReq.Req.TxCw.Frequency = ( uint32_t )( ( mcpsIndication->Buffer[3] << 16 ) | ( mcpsIndication->Buffer[4] << 8 ) | mcpsIndication->Buffer[5] ) * 100;
                             mlmeReq.Req.TxCw.Power = mcpsIndication->Buffer[6];
@@ -790,7 +793,7 @@ int main( void )
     macPrimitives.MacMlmeIndication = MlmeIndication;
     macCallbacks.GetBatteryLevel = BoardGetBatteryLevel;
     macCallbacks.GetTemperatureLevel = NULL;
-    macCallbacks.NvmContextChange = NvmCtxMgmtEvent;
+    //macCallbacks.NvmContextChange = NvmCtxMgmtEvent;
     macCallbacks.MacProcessNotify = OnMacProcessNotify;
 
     status = LoRaMacInitialization( &macPrimitives, &macCallbacks, ACTIVE_REGION );
@@ -822,26 +825,26 @@ int main( void )
             case DEVICE_STATE_RESTORE:
             {
                 // Try to restore from NVM and query the mac if possible.
-                if( NvmCtxMgmtRestore( ) == NVMCTXMGMT_STATUS_SUCCESS )
-                {
-                    printf( "\n###### ===== CTXS RESTORED ==== ######\n\n" );
-                }
-                else
-                {
-                    // Read secure-element DEV_EUI, JOI_EUI and SE_PIN values.
-                    mibReq.Type = MIB_DEV_EUI;
-                    LoRaMacMibGetRequestConfirm( &mibReq );
-                    memcpy1( devEui, mibReq.Param.DevEui, 8 );
+                // if( NvmCtxMgmtRestore( ) == NVMCTXMGMT_STATUS_SUCCESS )
+                // {
+                //     printf( "\n###### ===== CTXS RESTORED ==== ######\n\n" );
+                // }
+                // else
+                // {
+                //     // Read secure-element DEV_EUI, JOI_EUI and SE_PIN values.
+                //     mibReq.Type = MIB_DEV_EUI;
+                //     LoRaMacMibGetRequestConfirm( &mibReq );
+                //     memcpy1( devEui, mibReq.Param.DevEui, 8 );
 
-                    mibReq.Type = MIB_JOIN_EUI;
-                    LoRaMacMibGetRequestConfirm( &mibReq );
-                    memcpy1( joinEui, mibReq.Param.JoinEui, 8 );
+                //     mibReq.Type = MIB_JOIN_EUI;
+                //     LoRaMacMibGetRequestConfirm( &mibReq );
+                //     memcpy1( joinEui, mibReq.Param.JoinEui, 8 );
 
-                    mibReq.Type = MIB_SE_PIN;
-                    LoRaMacMibGetRequestConfirm( &mibReq );
-                    memcpy1( sePin, mibReq.Param.SePin, 4 );
+                //     mibReq.Type = MIB_SE_PIN;
+                //     LoRaMacMibGetRequestConfirm( &mibReq );
+                //     memcpy1( sePin, mibReq.Param.SePin, 4 );
 
-#if( OVER_THE_AIR_ACTIVATION == 0 )
+                #if( OVER_THE_AIR_ACTIVATION == 0 )
                     // Tell the MAC layer which network server version are we connecting too.
                     mibReq.Type = MIB_ABP_LORAWAN_VERSION;
                     mibReq.Param.AbpLrWanVersion.Value = ABP_ACTIVATION_LRWAN_VERSION;
@@ -851,18 +854,20 @@ int main( void )
                     mibReq.Param.NetID = LORAWAN_NETWORK_ID;
                     LoRaMacMibSetRequestConfirm( &mibReq );
 
+                #endif
+
                     // Choose a random device address if not already defined in Commissioning.h
-#if( STATIC_DEVICE_ADDRESS != 1 )
+                #if( STATIC_DEVICE_ADDRESS != 1 )
                     // Random seed initialization
                     srand1( BoardGetRandomSeed( ) );
                     // Choose a random device address
                     DevAddr = randr( 0, 0x01FFFFFF );
-#endif
+                #endif
 
                     mibReq.Type = MIB_DEV_ADDR;
                     mibReq.Param.DevAddr = DevAddr;
                     LoRaMacMibSetRequestConfirm( &mibReq );
-#endif // #if( OVER_THE_AIR_ACTIVATION == 0 )
+                #if( OVER_THE_AIR_ACTIVATION == 0 )
                 }
                 DeviceState = DEVICE_STATE_START;
                 break;
@@ -885,6 +890,7 @@ int main( void )
                 mibReq.Type = MIB_ADR;
                 mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
                 LoRaMacMibSetRequestConfirm( &mibReq );
+#endif
 
 #if defined( REGION_EU868 ) || defined( REGION_RU864 ) || defined( REGION_CN779 ) || defined( REGION_EU433 )
                 LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
@@ -986,10 +992,10 @@ int main( void )
             }
             case DEVICE_STATE_SLEEP:
             {
-                if( NvmCtxMgmtStore( ) == NVMCTXMGMT_STATUS_SUCCESS )
-                {
-                    printf( "\n###### ===== CTXS STORED ==== ######\n" );
-                }
+                // if( NvmCtxMgmtStore( ) == NVMCTXMGMT_STATUS_SUCCESS )
+                // {
+                //     printf( "\n###### ===== CTXS STORED ==== ######\n" );
+                // }
 
                 CRITICAL_SECTION_BEGIN( );
                 if( IsMacProcessPending == 1 )

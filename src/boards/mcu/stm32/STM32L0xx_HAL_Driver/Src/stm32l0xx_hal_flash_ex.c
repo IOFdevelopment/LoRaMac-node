@@ -509,7 +509,7 @@ void HAL_FLASHEx_AdvOBGetConfig(FLASH_AdvOBProgramInitTypeDef *pAdvOBInit)
 
 
   /* Get PCROP state */
-  pAdvOBInit->PCROPState = (FLASH->OPTR & FLASH_OPTR_WPRMOD) >> FLASH_OPTR_WPRMOD_Pos;
+  pAdvOBInit->PCROPState = (FLASH->OPTR & FLASH_OPTR_WPRMOD) >> 8U; //FLASH_OPTR_WPRMOD_Pos
   /* Get PCROP protected sector */
   pAdvOBInit->PCROPSector = FLASH->WRPR;
 
@@ -991,7 +991,7 @@ static uint8_t FLASH_OB_GetBOR(void)
 static uint8_t FLASH_OB_GetBOOTBit1(void)
 {
   /* Return the BOR level */
-  return (FLASH->OPTR & FLASH_OPTR_BOOT1) >> FLASH_OPTR_BOOT1_Pos;
+  return (FLASH->OPTR & FLASH_OPTR_BOOT1) >> 31U; //FLASH_OPTR_BOOT1_Pos
 
 }
 

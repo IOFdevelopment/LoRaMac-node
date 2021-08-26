@@ -26,6 +26,8 @@
  */
 #include "gpio-board.h"
 
+
+
 void GpioInit( Gpio_t *obj, PinNames pin, PinModes mode,  PinConfigs config, PinTypes type, uint32_t value )
 {
     GpioMcuInit( obj, pin, mode, config, type, value );

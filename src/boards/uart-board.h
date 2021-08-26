@@ -38,6 +38,7 @@ extern "C"
  * \param [IN] tx   UART Tx pin name to be used
  * \param [IN] rx   UART Rx pin name to be used
  */
+
 void UartMcuInit( Uart_t *obj, UartId_t uartId, PinNames tx, PinNames rx );
 
 /*!
