@@ -62,6 +62,7 @@ typedef enum
     LPM_OFF_MODE,
 } LpmGetMode_t;
 
+
 /*!
  * \brief  This API returns the Low Power Mode selected that will be applied when the system will enter low power mode
  *         if there is no update between the time the mode is read with this API and the time the system enters

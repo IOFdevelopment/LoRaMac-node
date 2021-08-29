@@ -30,5 +30,5 @@ void Delay( float s )
 
 void DelayMs( uint32_t ms )
 {
-    DelayMsMcu( ms );
+    DelayMs( ms );
 }

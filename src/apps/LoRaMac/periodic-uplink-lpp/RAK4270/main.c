@@ -5,6 +5,7 @@
 #include "LoRaMac.h"
 #include "Commissioning.h"
 #include "radio.h"
+
 //#warning "Check this include"
 //#include "NvmCtxMgmt.h"     //Check this include
 
@@ -118,76 +119,76 @@ extern Gpio_t Led1; // Tx
 extern Gpio_t Led3; // Rx
 extern Gpio_t Led4; // App
 
-// const char* MacStatusStrings[] =
-// {
-//     "OK",                            // LORAMAC_STATUS_OK
-//     "Busy",                          // LORAMAC_STATUS_BUSY
-//     "Service unknown",               // LORAMAC_STATUS_SERVICE_UNKNOWN
-//     "Parameter invalid",             // LORAMAC_STATUS_PARAMETER_INVALID
-//     "Frequency invalid",             // LORAMAC_STATUS_FREQUENCY_INVALID
-//     "Datarate invalid",              // LORAMAC_STATUS_DATARATE_INVALID
-//     "Frequency or datarate invalid", // LORAMAC_STATUS_FREQ_AND_DR_INVALID
-//     "No network joined",             // LORAMAC_STATUS_NO_NETWORK_JOINED
-//     "Length error",                  // LORAMAC_STATUS_LENGTH_ERROR
-//     "Region not supported",          // LORAMAC_STATUS_REGION_NOT_SUPPORTED
-//     "Skipped APP data",              // LORAMAC_STATUS_SKIPPED_APP_DATA
-//     "Duty-cycle restricted",         // LORAMAC_STATUS_DUTYCYCLE_RESTRICTED
-//     "No channel found",              // LORAMAC_STATUS_NO_CHANNEL_FOUND
-//     "No free channel found",         // LORAMAC_STATUS_NO_FREE_CHANNEL_FOUND
-//     "Busy beacon reserved time",     // LORAMAC_STATUS_BUSY_BEACON_RESERVED_TIME
-//     "Busy ping-slot window time",    // LORAMAC_STATUS_BUSY_PING_SLOT_WINDOW_TIME
-//     "Busy uplink collision",         // LORAMAC_STATUS_BUSY_UPLINK_COLLISION
-//     "Crypto error",                  // LORAMAC_STATUS_CRYPTO_ERROR
-//     "FCnt handler error",            // LORAMAC_STATUS_FCNT_HANDLER_ERROR
-//     "MAC command error",             // LORAMAC_STATUS_MAC_COMMAD_ERROR
-//     "ClassB error",                  // LORAMAC_STATUS_CLASS_B_ERROR
-//     "Confirm queue error",           // LORAMAC_STATUS_CONFIRM_QUEUE_ERROR
-//     "Multicast group undefined",     // LORAMAC_STATUS_MC_GROUP_UNDEFINED
-//     "Unknown error",                 // LORAMAC_STATUS_ERROR
-// };
+const char* MacStatusStringsRAK[] =
+{
+    "OK",                            // LORAMAC_STATUS_OK
+    "Busy",                          // LORAMAC_STATUS_BUSY
+    "Service unknown",               // LORAMAC_STATUS_SERVICE_UNKNOWN
+    "Parameter invalid",             // LORAMAC_STATUS_PARAMETER_INVALID
+    "Frequency invalid",             // LORAMAC_STATUS_FREQUENCY_INVALID
+    "Datarate invalid",              // LORAMAC_STATUS_DATARATE_INVALID
+    "Frequency or datarate invalid", // LORAMAC_STATUS_FREQ_AND_DR_INVALID
+    "No network joined",             // LORAMAC_STATUS_NO_NETWORK_JOINED
+    "Length error",                  // LORAMAC_STATUS_LENGTH_ERROR
+    "Region not supported",          // LORAMAC_STATUS_REGION_NOT_SUPPORTED
+    "Skipped APP data",              // LORAMAC_STATUS_SKIPPED_APP_DATA
+    "Duty-cycle restricted",         // LORAMAC_STATUS_DUTYCYCLE_RESTRICTED
+    "No channel found",              // LORAMAC_STATUS_NO_CHANNEL_FOUND
+    "No free channel found",         // LORAMAC_STATUS_NO_FREE_CHANNEL_FOUND
+    "Busy beacon reserved time",     // LORAMAC_STATUS_BUSY_BEACON_RESERVED_TIME
+    "Busy ping-slot window time",    // LORAMAC_STATUS_BUSY_PING_SLOT_WINDOW_TIME
+    "Busy uplink collision",         // LORAMAC_STATUS_BUSY_UPLINK_COLLISION
+    "Crypto error",                  // LORAMAC_STATUS_CRYPTO_ERROR
+    "FCnt handler error",            // LORAMAC_STATUS_FCNT_HANDLER_ERROR
+    "MAC command error",             // LORAMAC_STATUS_MAC_COMMAD_ERROR
+    "ClassB error",                  // LORAMAC_STATUS_CLASS_B_ERROR
+    "Confirm queue error",           // LORAMAC_STATUS_CONFIRM_QUEUE_ERROR
+    "Multicast group undefined",     // LORAMAC_STATUS_MC_GROUP_UNDEFINED
+    "Unknown error",                 // LORAMAC_STATUS_ERROR
+};
 
-// const char* EventInfoStatusStrings[] =
-// {
-//     "OK",                            // LORAMAC_EVENT_INFO_STATUS_OK
-//     "Error",                         // LORAMAC_EVENT_INFO_STATUS_ERROR
-//     "Tx timeout",                    // LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT
-//     "Rx 1 timeout",                  // LORAMAC_EVENT_INFO_STATUS_RX1_TIMEOUT
-//     "Rx 2 timeout",                  // LORAMAC_EVENT_INFO_STATUS_RX2_TIMEOUT
-//     "Rx1 error",                     // LORAMAC_EVENT_INFO_STATUS_RX1_ERROR
-//     "Rx2 error",                     // LORAMAC_EVENT_INFO_STATUS_RX2_ERROR
-//     "Join failed",                   // LORAMAC_EVENT_INFO_STATUS_JOIN_FAIL
-//     "Downlink repeated",             // LORAMAC_EVENT_INFO_STATUS_DOWNLINK_REPEATED
-//     "Tx DR payload size error",      // LORAMAC_EVENT_INFO_STATUS_TX_DR_PAYLOAD_SIZE_ERROR
-//     "Downlink too many frames loss", // LORAMAC_EVENT_INFO_STATUS_DOWNLINK_TOO_MANY_FRAMES_LOSS
-//     "Address fail",                  // LORAMAC_EVENT_INFO_STATUS_ADDRESS_FAIL
-//     "MIC fail",                      // LORAMAC_EVENT_INFO_STATUS_MIC_FAIL
-//     "Multicast fail",                // LORAMAC_EVENT_INFO_STATUS_MULTICAST_FAIL
-//     "Beacon locked",                 // LORAMAC_EVENT_INFO_STATUS_BEACON_LOCKED
-//     "Beacon lost",                   // LORAMAC_EVENT_INFO_STATUS_BEACON_LOST
-//     "Beacon not found"               // LORAMAC_EVENT_INFO_STATUS_BEACON_NOT_FOUND
-// };
+const char* EventInfoStatusStringsRAK[] =
+{
+    "OK",                            // LORAMAC_EVENT_INFO_STATUS_OK
+    "Error",                         // LORAMAC_EVENT_INFO_STATUS_ERROR
+    "Tx timeout",                    // LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT
+    "Rx 1 timeout",                  // LORAMAC_EVENT_INFO_STATUS_RX1_TIMEOUT
+    "Rx 2 timeout",                  // LORAMAC_EVENT_INFO_STATUS_RX2_TIMEOUT
+    "Rx1 error",                     // LORAMAC_EVENT_INFO_STATUS_RX1_ERROR
+    "Rx2 error",                     // LORAMAC_EVENT_INFO_STATUS_RX2_ERROR
+    "Join failed",                   // LORAMAC_EVENT_INFO_STATUS_JOIN_FAIL
+    "Downlink repeated",             // LORAMAC_EVENT_INFO_STATUS_DOWNLINK_REPEATED
+    "Tx DR payload size error",      // LORAMAC_EVENT_INFO_STATUS_TX_DR_PAYLOAD_SIZE_ERROR
+    "Downlink too many frames loss", // LORAMAC_EVENT_INFO_STATUS_DOWNLINK_TOO_MANY_FRAMES_LOSS
+    "Address fail",                  // LORAMAC_EVENT_INFO_STATUS_ADDRESS_FAIL
+    "MIC fail",                      // LORAMAC_EVENT_INFO_STATUS_MIC_FAIL
+    "Multicast fail",                // LORAMAC_EVENT_INFO_STATUS_MULTICAST_FAIL
+    "Beacon locked",                 // LORAMAC_EVENT_INFO_STATUS_BEACON_LOCKED
+    "Beacon lost",                   // LORAMAC_EVENT_INFO_STATUS_BEACON_LOST
+    "Beacon not found"               // LORAMAC_EVENT_INFO_STATUS_BEACON_NOT_FOUND
+};
 
-// void PrintHexBuffer( uint8_t *buffer, uint8_t size )
-// {
-//     uint8_t newline = 0;
+void PrintHexBufferRAK( uint8_t *buffer, uint8_t size )
+{
+    uint8_t newline = 0;
 
-//     for( uint8_t i = 0; i < size; i++ )
-//     {
-//         if( newline != 0 )
-//         {
-//             printf( "\n" );
-//             newline = 0;
-//         }
+    for( uint8_t i = 0; i < size; i++ )
+    {
+        if( newline != 0 )
+        {
+            printf( "\n" );
+            newline = 0;
+        }
 
-//         printf( "%02X ", buffer[i] );
+        printf( "%02X ", buffer[i] );
 
-//         if( ( ( i + 1 ) % 16 ) == 0 )
-//         {
-//             newline = 1;
-//         }
-//     }
-//     printf( "\n" );
-// }
+        if( ( ( i + 1 ) % 16 ) == 0 )
+        {
+            newline = 1;
+        }
+    }
+    printf( "\n" );
+}
 
 static void JoinNetwork( void )
 {
@@ -199,7 +200,7 @@ static void JoinNetwork( void )
     // Starts the join procedure
     status = LoRaMacMlmeRequest( &mlmeReq );
     printf( "\n###### ===== MLME-Request - MLME_JOIN ==== ######\n" );
-    printf( "STATUS      : %s\n", MacStatusStrings[status] );
+    printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
 
     if( status == LORAMAC_STATUS_OK )
     {
@@ -299,7 +300,7 @@ static bool SendFrame( void )
     LoRaMacStatus_t status;
     status = LoRaMacMcpsRequest( &mcpsReq );
     printf( "\n###### ===== MCPS-Request ==== ######\n" );
-    printf( "STATUS      : %s\n", MacStatusStrings[status] );
+    printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
 
     if( status == LORAMAC_STATUS_DUTYCYCLE_RESTRICTED )
     {
@@ -340,22 +341,22 @@ static void OnTxNextPacketTimerEvent( void* context )
 
 static void OnLed1TimerEvent( void* context )
 {
-    TimerStop( &Led1Timer );
+    //TimerStop( &Led1Timer );
     // Switch LED 1 OFF
-    GpioWrite( &Led1, 0 );
+    //GpioWrite( &Led1, 0 );
 }
 
 static void OnLed3TimerEvent( void* context )
 {
-    TimerStop( &Led3Timer );
+    //TimerStop( &Led3Timer );
     // Switch LED 3 OFF
-    GpioWrite( &Led3, 0 );
+    //GpioWrite( &Led3, 0 );
 }
 
 static void McpsConfirm( McpsConfirm_t *mcpsConfirm )
 {
     printf( "\n###### ===== MCPS-Confirm ==== ######\n" );
-    printf( "STATUS      : %s\n", EventInfoStatusStrings[mcpsConfirm->Status] );
+    printf( "STATUS      : %s\n", EventInfoStatusStringsRAK[mcpsConfirm->Status] );
     if( mcpsConfirm->Status != LORAMAC_EVENT_INFO_STATUS_OK )
     {
     }
@@ -386,8 +387,8 @@ static void McpsConfirm( McpsConfirm_t *mcpsConfirm )
         }
 
         // Switch LED 1 ON
-        GpioWrite( &Led1, 1 );
-        TimerStart( &Led1Timer );
+        //GpioWrite( &Led1, 1 );
+        //TimerStart( &Led1Timer );
     }
     MibRequestConfirm_t mibGet;
     MibRequestConfirm_t mibReq;
@@ -413,7 +414,7 @@ static void McpsConfirm( McpsConfirm_t *mcpsConfirm )
         {
             printf( "UNCONFIRMED\n" );
         }
-        PrintHexBuffer( AppData.Buffer, AppData.BufferSize );
+        PrintHexBufferRAK( AppData.Buffer, AppData.BufferSize );
     }
 
     printf( "\n" );
@@ -458,7 +459,7 @@ static void McpsConfirm( McpsConfirm_t *mcpsConfirm )
 static void McpsIndication( McpsIndication_t *mcpsIndication )
 {
     printf( "\n###### ===== MCPS-Indication ==== ######\n" );
-    printf( "STATUS      : %s\n", EventInfoStatusStrings[mcpsIndication->Status] );
+    printf( "STATUS      : %s\n", EventInfoStatusStringsRAK[mcpsIndication->Status] );
     if( mcpsIndication->Status != LORAMAC_EVENT_INFO_STATUS_OK )
     {
         return;
@@ -516,7 +517,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
             if( mcpsIndication->BufferSize == 1 )
             {
                 AppLedStateOn = mcpsIndication->Buffer[0] & 0x01;
-                GpioWrite( &Led4, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 1 : 0 );
+                //GpioWrite( &Led4, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 1 : 0 );
             }
             break;
         case 224:
@@ -596,7 +597,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         mlmeReq.Type = MLME_LINK_CHECK;
                         LoRaMacStatus_t status = LoRaMacMlmeRequest( &mlmeReq );
                         printf( "\n###### ===== MLME-Request - MLME_LINK_CHECK ==== ######\n" );
-                        printf( "STATUS      : %s\n", MacStatusStrings[status] );
+                        printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
                     }
                     break;
                 case 6: // (ix)
@@ -628,7 +629,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                             mlmeReq.Req.TxCw.Timeout = ( uint16_t )( ( mcpsIndication->Buffer[1] << 8 ) | mcpsIndication->Buffer[2] );
                             LoRaMacStatus_t status = LoRaMacMlmeRequest( &mlmeReq );
                             printf( "\n###### ===== MLME-Request - MLME_TXCW ==== ######\n" );
-                            printf( "STATUS      : %s\n", MacStatusStrings[status] );
+                            printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
                         }
                         else if( mcpsIndication->BufferSize == 7 )
                         {
@@ -639,7 +640,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                             mlmeReq.Req.TxCw.Power = mcpsIndication->Buffer[6];
                             LoRaMacStatus_t status = LoRaMacMlmeRequest( &mlmeReq );
                             printf( "\n###### ===== MLME-Request - MLME_TXCW1 ==== ######\n" );
-                            printf( "STATUS      : %s\n", MacStatusStrings[status] );
+                            printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
                         }
                         ComplianceTest.State = 1;
                     }
@@ -652,7 +653,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 
                         LoRaMacStatus_t status = LoRaMacMlmeRequest( &mlmeReq );
                         printf( "\n###### ===== MLME-Request - MLME_DEVICE_TIME ==== ######\n" );
-                        printf( "STATUS      : %s\n", MacStatusStrings[status] );
+                        printf( "STATUS      : %s\n", MacStatusStringsRAK[status] );
                     }
                     break;
                 default:
@@ -666,8 +667,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
     }
 
     // Switch LED 3 ON for each received downlink
-    GpioWrite( &Led3, 1 );
-    TimerStart( &Led3Timer );
+    //GpioWrite( &Led3, 1 );
+    //TimerStart( &Led3Timer );
 
     const char *slotStrings[] = { "1", "2", "C", "C Multicast", "B Ping-Slot", "B Multicast Ping-Slot" };
 
@@ -680,7 +681,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
     if( mcpsIndication->BufferSize != 0 )
     {
         printf( "RX DATA     : \n" );
-        PrintHexBuffer( mcpsIndication->Buffer, mcpsIndication->BufferSize );
+        PrintHexBufferRAK( mcpsIndication->Buffer, mcpsIndication->BufferSize );
     }
 
     printf( "\n" );
@@ -694,7 +695,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
 static void MlmeConfirm( MlmeConfirm_t *mlmeConfirm )
 {
     printf( "\n###### ===== MLME-Confirm ==== ######\n" );
-    printf( "STATUS      : %s\n", EventInfoStatusStrings[mlmeConfirm->Status] );
+    printf( "STATUS      : %s\n", EventInfoStatusStringsRAK[mlmeConfirm->Status] );
     if( mlmeConfirm->Status != LORAMAC_EVENT_INFO_STATUS_OK )
     {
     }
@@ -752,7 +753,7 @@ static void MlmeIndication( MlmeIndication_t *mlmeIndication )
     if( mlmeIndication->Status != LORAMAC_EVENT_INFO_STATUS_BEACON_LOCKED )
     {
         printf( "\n###### ===== MLME-Indication ==== ######\n" );
-        printf( "STATUS      : %s\n", EventInfoStatusStrings[mlmeIndication->Status] );
+        printf( "STATUS      : %s\n", EventInfoStatusStringsRAK[mlmeIndication->Status] );
     }
     if( mlmeIndication->Status != LORAMAC_EVENT_INFO_STATUS_OK )
     {
@@ -799,7 +800,7 @@ int main( void )
     status = LoRaMacInitialization( &macPrimitives, &macCallbacks, ACTIVE_REGION );
     if ( status != LORAMAC_STATUS_OK )
     {
-        printf( "LoRaMac wasn't properly initialized, error: %s", MacStatusStrings[status] );
+        printf( "LoRaMac wasn't properly initialized, error: %s", MacStatusStringsRAK[status] );
         // Fatal error, endless loop.
         while ( 1 )
         {
@@ -877,11 +878,11 @@ int main( void )
             {
                 TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );
 
-                TimerInit( &Led1Timer, OnLed1TimerEvent );
-                TimerSetValue( &Led1Timer, 25 );
+                //TimerInit( &Led1Timer, OnLed1TimerEvent );
+                //TimerSetValue( &Led1Timer, 25 );
 
-                TimerInit( &Led3Timer, OnLed3TimerEvent );
-                TimerSetValue( &Led3Timer, 25 );
+                //TimerInit( &Led3Timer, OnLed3TimerEvent );
+                //TimerSetValue( &Led3Timer, 25 );
 
                 mibReq.Type = MIB_PUBLIC_NETWORK;
                 mibReq.Param.EnablePublicNetwork = LORAWAN_PUBLIC_NETWORK;

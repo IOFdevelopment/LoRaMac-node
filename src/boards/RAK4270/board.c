@@ -90,6 +90,7 @@ void BoardInitPeriph( void )
 }
 
 ////////////////////////////----RAK----/////////////////////////////////
+
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -363,11 +364,11 @@ void BoardInitMcu( void )
 
 
         BoardUnusedIoInit( );
-        if( GetBoardPowerSource( ) == BATTERY_POWER )
-        {
-            // Disables OFF mode - Enables lowest power mode (STOP)
-            LpmSetOffMode( LPM_APPLI_ID, LPM_DISABLE );
-        }
+        // if( GetBoardPowerSource( ) == BATTERY_POWER )
+        // {
+        //     // Disables OFF mode - Enables lowest power mode (STOP)
+        //     LpmSetOffMode( LPM_APPLI_ID, LPM_DISABLE );
+        // }
     }
     else
     {
@@ -597,7 +598,7 @@ void BoardLowPowerHandler( void )
      * and cortex will not enter low power anyway
      */
 
-    LpmEnterLowPower( );
+    //LpmEnterLowPower( );
 
     __enable_irq( );
 }

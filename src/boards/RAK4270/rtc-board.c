@@ -283,11 +283,11 @@ void RtcSetAlarm( uint32_t timeout )
     // We don't go in Low Power mode for timeout below MIN_ALARM_DELAY
     if( ( int64_t )MIN_ALARM_DELAY < ( int64_t )( timeout - RtcGetTimerElapsedTime( ) ) )
     {
-        LpmSetStopMode( LPM_RTC_ID, LPM_ENABLE );
+        //LpmSetStopMode( LPM_RTC_ID, LPM_ENABLE );
     }
     else
     {
-        LpmSetStopMode( LPM_RTC_ID, LPM_DISABLE );
+        //LpmSetStopMode( LPM_RTC_ID, LPM_DISABLE );
     }
 
     RtcStartAlarm( timeout );
@@ -489,7 +489,7 @@ void RTC_IRQHandler( void )
     RTC_HandleTypeDef* hrtc = &RtcHandle;
 
     // Enable low power at irq
-    LpmSetStopMode( LPM_RTC_ID, LPM_ENABLE );
+    //LpmSetStopMode( LPM_RTC_ID, LPM_ENABLE );
 
     // Clear the EXTI's line Flag for RTC Alarm
     __HAL_RTC_ALARM_EXTI_CLEAR_FLAG( );
