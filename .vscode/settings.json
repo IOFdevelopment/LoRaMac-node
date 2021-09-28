@@ -10,14 +10,14 @@
         //     Linux   : /usr
         //     OSX     : /usr/local
         // It is required to uncomment and to fill the following line.
-        //"TOOLCHAIN_PREFIX":"/path/to/toolchain",
+        "TOOLCHAIN_PREFIX":"${workspaceFolder}/../gcc-arm-none-eabi-9-2020-q2-update-win32/",
 
         // In case your OpenOCD is not installed under the default path:
         //     Windows : C:/openocd/bin/openocd.exe
         //     Linux   : /usr/bin/openocd
         //     OSX     : /usr/local/bin/openocd
         // Please uncomment the following line and fill it accordingly.
-        //"OPENOCD_BIN":"C:/openocd/bin/openocd.exe",
+        "OPENOCD_BIN":"${workspaceFolder}/../openocd/bin/openocd.exe",
 
         // Specifies the path to the CMAKE toolchain file.
         "CMAKE_TOOLCHAIN_FILE":"cmake/toolchain-arm-none-eabi.cmake",
@@ -41,7 +41,7 @@
         // Select the active region for which the stack will be initialized.
         // You can choose between:
         // LORAMAC_REGION_EU868, LORAMAC_REGION_US915, ..
-        "ACTIVE_REGION":"LORAMAC_REGION_EU868",
+        "ACTIVE_REGION":"LORAMAC_REGION_AU915",
 
         // Select the type of modulation, applicable to the ping-pong or
         // rx-sensi applications. You can choose between:
@@ -50,12 +50,12 @@
 
         // Target board, the following boards are supported:
         // NAMote72, NucleoL073 (Default), NucleoL152, NucleoL476, SAMR34, SKiM880B, SKiM980A, SKiM881AXL, B-L072Z-LRWAN1.
-        "BOARD":"NucleoL073",
+        "BOARD":"RAK4270",
 
         // MBED Radio shield selection. (Applies only to Nucleo platforms)
         // The following shields are supported:
         // SX1272MB2DAS, SX1276MB1LAS, SX1276MB1MAS, SX1261MBXBAS(Default), SX1262MBXCAS, SX1262MBXDAS, LR1110MB1XXS.
-        "MBED_RADIO_SHIELD":"SX1261MBXBAS",
+        "MBED_RADIO_SHIELD":"SX1262MBXCAS",
 
         // Secure element type selection the following are supported
         // SOFT_SE(Default), LR1110_SE, ATECC608A_TNGLORA_SE
@@ -66,11 +66,11 @@
 
         // Region support activation, Select the ones you want to support.
         // By default only REGION_EU868 support is enabled.
-        "REGION_EU868":"ON",
+        "REGION_EU868":"OFF",
         "REGION_US915":"OFF",
         "REGION_CN779":"OFF",
         "REGION_EU433":"OFF",
-        "REGION_AU915":"OFF",
+        "REGION_AU915":"ON",
         "REGION_CN470":"OFF",
         "REGION_AS923":"OFF",
         "REGION_KR920":"OFF",
@@ -98,6 +98,13 @@
         "type_traits": "c",
         "utility": "c",
         "board-config.h": "c",
-        "sysirqhandlers.h": "c"
+        "sysirqhandlers.h": "c",
+        "gpio-board.h": "c",
+        "board.h": "c",
+        "commissioning.h": "c",
+        "hal_gpio.h": "c",
+        "stm32l0xx_hal.h": "c",
+        "delay.h": "c",
+        "delay-board.h": "c"
     }
 }

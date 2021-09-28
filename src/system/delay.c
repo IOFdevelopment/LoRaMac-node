@@ -22,6 +22,7 @@
  */
 #include "delay-board.h"
 #include "delay.h"
+#include "stm32l0xx_hal.h"
 
 void Delay( float s )
 {
@@ -30,5 +31,6 @@ void Delay( float s )
 
 void DelayMs( uint32_t ms )
 {
-    DelayMs( ms );
+    // DelayMs( ms );
+    HAL_Delay(ms);
 }

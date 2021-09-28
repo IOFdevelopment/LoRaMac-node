@@ -127,6 +127,8 @@
   * @}
   */
 
+ #define STM32L071xx
+
 /** @addtogroup Device_Included
   * @{
   */

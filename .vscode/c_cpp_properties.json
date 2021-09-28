@@ -1,14 +1,23 @@
 {
     "configurations": [
         {
-            "name": "ARM",
-            "compileCommands": "${workspaceRoot}/build/compile_commands.json",
-            "intelliSenseMode": "clang-x64",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}"
-                ]
-            },
+            "name": "RAK4270",
+            "includePath": [
+                "${workspaceFolder}/src/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USE_HAL_DRIVER",
+                "STM32L071xx"
+            ],
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "arm-none-eabi-gcc",
+            "compilerArgs": [
+                "-mcpu=cortex-m0plus",
+                "-mthumb"
+            ],
             "cStandard": "c11",
             "cppStandard": "c++17",
             "configurationProvider": "ms-vscode.cmake-tools"
