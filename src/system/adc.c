@@ -28,27 +28,27 @@
  */
 static bool AdcInitialized = false;
 
-void AdcInit( Adc_t *obj, PinNames adcInput )
+void AdcInit(Adc_t *obj, PinNames adcInput)
 {
-    if( AdcInitialized == false )
+    if (AdcInitialized == false)
     {
         AdcInitialized = true;
 
-        AdcMcuInit( obj, adcInput );
-        AdcMcuConfig( );
+        AdcMcuInit(obj, adcInput);
+        AdcMcuConfig();
     }
 }
 
-void AdcDeInit( Adc_t *obj )
+void AdcDeInit(Adc_t *obj)
 {
     AdcInitialized = false;
 }
 
-uint16_t AdcReadChannel( Adc_t *obj, uint32_t channel )
+uint16_t AdcReadChannel(Adc_t *obj, uint32_t channel)
 {
-    if( AdcInitialized == true )
+    if (AdcInitialized == true)
     {
-        return AdcMcuReadChannel( obj, channel );
+        return AdcMcuReadChannel(obj, channel);
     }
     else
     {

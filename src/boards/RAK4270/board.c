@@ -1,4 +1,25 @@
-
+/*!
+ * \file      board.c
+ *
+ * \brief     Target board general functions implementation
+ *
+ * \copyright Revised BSD License, see section \ref LICENSE.
+ *
+ * \code
+ *                ______                              _
+ *               / _____)             _              | |
+ *              ( (____  _____ ____ _| |_ _____  ____| |__
+ *               \____ \| ___ |    (_   _) ___ |/ ___)  _ \
+ *               _____) ) ____| | | || |_| ____( (___| | | |
+ *              (______/|_____)_|_|_| \__)_____)\____)_| |_|
+ *              (C)2013-2017 Semtech
+ *
+ * \endcode
+ *
+ * \author    Miguel Luis ( Semtech )
+ *
+ * \author    Gregory Cristian ( Semtech )
+ */
 #include "stm32l0xx.h"
 #include "utilities.h"
 #include "gpio.h"
@@ -9,60 +30,60 @@
 #include "timer.h"
 #include "sysIrqHandlers.h"
 #include "board-config.h"
-#include "gpio-board.h"
-#include "uart-board.h"
-#include "spi-board.h"
 #include "lpm-board.h"
 #include "rtc-board.h"
+
 #include "sx126x-board.h"
+
 #include "board.h"
 
 /*!
-* Unique Devices IDs register set ( STM32L0xxx )
-*/
+ * Unique Devices IDs register set ( STM32L0xxx )
+ */
 #define ID1 (0x1FF80050)
 #define ID2 (0x1FF80054)
 #define ID3 (0x1FF80064)
 
+/*!
+ * LED GPIO pins objects
+ */
+Gpio_t Led1;
+Gpio_t Led2;
+
 /*
-* MCU objects
-*/
-SPI_HandleTypeDef hspi1;
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-
+ * MCU objects
+ */
+Adc_t Adc;
 Uart_t Uart2;
 
-void SystemClockConfig(void);
 /*!
-* Initializes the unused GPIO to a know status
-*/
+ * Initializes the unused GPIO to a know status
+ */
 static void BoardUnusedIoInit(void);
 
 /*!
-* System Clock Configuration
-*/
-//static void SystemClockConfig( void );
+ * System Clock Configuration
+ */
+static void SystemClockConfig(void);
 
 /*!
-* System Clock Re-Configuration when waking up from STOP mode
-*/
+ * System Clock Re-Configuration when waking up from STOP mode
+ */
 static void SystemClockReConfig(void);
 
 /*!
-* Flag to indicate if the MCU is Initialized
-*/
+ * Flag to indicate if the MCU is Initialized
+ */
 static bool McuInitialized = false;
 
 /*!
-* Flag used to indicate if board is powered from the USB
-*/
+ * Flag used to indicate if board is powered from the USB
+ */
 static bool UsbIsConnected = false;
 
 /*!
-* UART2 FIFO buffers size
-*/
+ * UART2 FIFO buffers size
+ */
 #define UART2_FIFO_TX_SIZE 1024
 #define UART2_FIFO_RX_SIZE 1024
 
@@ -84,293 +105,73 @@ void BoardInitPeriph(void)
 {
 }
 
-////////////////////////////----RAK----/////////////////////////////////
-
-void Error_Handler(void)
-{
-	/* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1)
-	{
-	}
-	/* USER CODE END Error_Handler_Debug */
-}
-
-void SystemClockConfig(void)
-{
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-	/** Configure the main internal regulator output voltage
- */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-	/** Initializes the RCC Oscillators according to the specified parameters
- * in the RCC_OscInitTypeDef structure.
- */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-	RCC_OscInitStruct.MSICalibrationValue = 0;
-	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
- */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2;
-	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-///////////////////////----RAK----/////////////////////////////
-
-void SystemClock_Config(void)
-{
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-	/** Configure the main internal regulator output voltage
- */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-	/** Initializes the RCC Oscillators according to the specified parameters
- * in the RCC_OscInitTypeDef structure.
- */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-	RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-	RCC_OscInitStruct.MSICalibrationValue = 0;
-	RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
- */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2;
-	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-	{
-		Error_Handler();
-	}
-}
-
-void MX_GPIO_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0 | GPIO_PIN_11, GPIO_PIN_RESET);
-
-	/*Configure GPIO pins : PA0 PA11 */
-	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_11;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : PB0 */
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	/*Configure GPIO pins : PB1 PB5 */
-	GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_5;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	/*Configure GPIO pins : PB6 PB7 */
-	GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	GPIO_InitStruct.Alternate = GPIO_AF1_I2C1;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	/* EXTI interrupt init*/
-	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
-
-	HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-}
-
-void MX_SPI1_Init(void)
-{
-
-	/* USER CODE BEGIN SPI1_Init 0 */
-
-	/* USER CODE END SPI1_Init 0 */
-
-	/* USER CODE BEGIN SPI1_Init 1 */
-
-	/* USER CODE END SPI1_Init 1 */
-	/* SPI1 parameter configuration*/
-	hspi1.Instance = SPI1;
-	hspi1.Init.Mode = SPI_MODE_MASTER;
-	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1.Init.CRCPolynomial = 7;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN SPI1_Init 2 */
-
-	/* USER CODE END SPI1_Init 2 */
-}
-static void MX_USART1_UART_Init(void)
-{
-
-	/* USER CODE BEGIN USART1_Init 0 */
-
-	/* USER CODE END USART1_Init 0 */
-
-	/* USER CODE BEGIN USART1_Init 1 */
-
-	/* USER CODE END USART1_Init 1 */
-	huart1.Instance = USART1;
-	huart1.Init.BaudRate = 115200;
-	huart1.Init.WordLength = UART_WORDLENGTH_8B;
-	huart1.Init.StopBits = UART_STOPBITS_1;
-	huart1.Init.Parity = UART_PARITY_NONE;
-	huart1.Init.Mode = UART_MODE_TX_RX;
-	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	if (HAL_UART_Init(&huart1) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART1_Init 2 */
-
-	/* USER CODE END USART1_Init 2 */
-}
-
-/**
- * @brief USART2 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USART2_UART_Init(void)
-{
-
-	/* USER CODE BEGIN USART2_Init 0 */
-
-	/* USER CODE END USART2_Init 0 */
-
-	/* USER CODE BEGIN USART2_Init 1 */
-
-	/* USER CODE END USART2_Init 1 */
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 115200;
-	huart2.Init.WordLength = UART_WORDLENGTH_8B;
-	huart2.Init.StopBits = UART_STOPBITS_1;
-	huart2.Init.Parity = UART_PARITY_NONE;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	if (HAL_UART_Init(&huart2) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART2_Init 2 */
-
-	/* USER CODE END USART2_Init 2 */
-}
-
-///////////////////////----RAK----/////////////////////////////
-
 void BoardInitMcu(void)
 {
 	if (McuInitialized == false)
 	{
 		HAL_Init();
 
+		// LEDs
+		GpioInit(&Led1, LED_1, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0);
+		GpioInit(&Led2, LED_2, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0);
+
 		SystemClockConfig();
 
 		UsbIsConnected = true;
 
-		// FifoInit(&Uart2.FifoTx, Uart2TxBuffer, UART2_FIFO_TX_SIZE);
-		// FifoInit(&Uart2.FifoRx, Uart2RxBuffer, UART2_FIFO_RX_SIZE);
+		FifoInit(&Uart2.FifoTx, Uart2TxBuffer, UART2_FIFO_TX_SIZE);
+		FifoInit(&Uart2.FifoRx, Uart2RxBuffer, UART2_FIFO_RX_SIZE);
 		// Configure your terminal for 8 Bits data (7 data bit + 1 parity bit), no parity and no flow ctrl
-		//UartInit( &Uart2, UART_2, UART_TX, UART_RX );
-		//UartConfig( &Uart2, RX_TX, 921600, UART_8_BIT, UART_1_STOP_BIT, NO_PARITY, NO_FLOW_CTRL );
-
-		MX_GPIO_Init();
-		MX_SPI1_Init();
-
-		MX_USART1_UART_Init();
-		MX_USART2_UART_Init();
+		UartInit(&Uart2, UART_2, UART_TX, UART_RX);
+		UartConfig(&Uart2, RX_TX, 921600, UART_8_BIT, UART_1_STOP_BIT, NO_PARITY, NO_FLOW_CTRL);
 
 		RtcInit();
 
 		BoardUnusedIoInit();
-		// if( GetBoardPowerSource( ) == BATTERY_POWER )
-		// {
-		//     // Disables OFF mode - Enables lowest power mode (STOP)
-		//     LpmSetOffMode( LPM_APPLI_ID, LPM_DISABLE );
-		// }
+		if (GetBoardPowerSource() == BATTERY_POWER)
+		{
+			// Disables OFF mode - Enables lowest power mode (STOP)
+			LpmSetOffMode(LPM_APPLI_ID, LPM_DISABLE);
+		}
 	}
 	else
 	{
 		SystemClockReConfig();
 	}
 
-	// SpiInit(&SX126x.Spi, SPI_1, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC);
-	// SX126xIoInit();
+	AdcInit(&Adc, NC); // Just initialize ADC
 
-	// if (McuInitialized == false)
-	// {
-	// 	McuInitialized = true;
-	// 	SX126xIoDbgInit();
-	// 	SX126xIoTcxoInit();
-	// }
+#if defined(SX1261MBXBAS) || defined(SX1262MBXCAS) || defined(SX1262MBXDAS)
+	SpiInit(&SX126x.Spi, SPI_1, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC);
+	SX126xIoInit();
+#elif defined(LR1110MB1XXS)
+	SpiInit(&LR1110.spi, SPI_1, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC);
+	lr1110_board_init_io(&LR1110);
+#elif defined(SX1272MB2DAS)
+	SpiInit(&SX1272.Spi, SPI_1, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC);
+	SX1272IoInit();
+#elif defined(SX1276MB1LAS) || defined(SX1276MB1MAS)
+	SpiInit(&SX1276.Spi, SPI_1, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC);
+	SX1276IoInit();
+#endif
+
+	if (McuInitialized == false)
+	{
+		McuInitialized = true;
+#if defined(SX1261MBXBAS) || defined(SX1262MBXCAS) || defined(SX1262MBXDAS)
+		SX126xIoDbgInit();
+		// WARNING: If necessary the TCXO control is initialized by SX126xInit function.
+#elif defined(LR1110MB1XXS)
+		lr1110_board_init_dbg_io(&LR1110);
+		// WARNING: If necessary the TCXO control is initialized by SX126xInit function.
+#elif defined(SX1272MB2DAS)
+		SX1272IoDbgInit();
+		SX1272IoTcxoInit();
+#elif defined(SX1276MB1LAS) || defined(SX1276MB1MAS)
+		SX1276IoDbgInit();
+		SX1276IoTcxoInit();
+#endif
+	}
 }
 
 void BoardResetMcu(void)
@@ -383,8 +184,21 @@ void BoardResetMcu(void)
 
 void BoardDeInitMcu(void)
 {
+	AdcDeInit(&Adc);
+
+#if defined(SX1261MBXBAS) || defined(SX1262MBXCAS) || defined(SX1262MBXDAS)
 	SpiDeInit(&SX126x.Spi);
 	SX126xIoDeInit();
+#elif defined(LR1110MB1XXS)
+	SpiDeInit(&LR1110.spi);
+	lr1110_board_deinit_io(&LR1110);
+#elif defined(SX1272MB2DAS)
+	SpiDeInit(&SX1272.Spi);
+	SX1272IoDeInit();
+#elif defined(SX1276MB1LAS) || defined(SX1276MB1MAS)
+	SpiDeInit(&SX1276.Spi);
+	SX1276IoDeInit();
+#endif
 }
 
 uint32_t BoardGetRandomSeed(void)
@@ -404,19 +218,110 @@ void BoardGetUniqueId(uint8_t *id)
 	id[0] = ((*(uint32_t *)ID2));
 }
 
+/*!
+ * Factory power supply
+ */
+#define VDDA_VREFINT_CAL ((uint32_t)3000) // mV
+
+/*!
+ * VREF calibration value
+ */
+#define VREFINT_CAL (*(uint16_t *)((uint32_t)0x1FF80078))
+
+/*
+ * Internal temperature sensor, parameter TS_CAL1: TS ADC raw data acquired at
+ * a temperature of 110 DegC (+-5 DegC), VDDA = 3.3 V (+-10 mV).
+ */
+#define TEMP30_CAL_ADDR (*(uint16_t *)((uint32_t)0x1FF8007A))
+
+/* Internal temperature sensor, parameter TS_CAL2: TS ADC raw data acquired at
+ *a temperature of  30 DegC (+-5 DegC), VDDA = 3.3 V (+-10 mV). */
+#define TEMP110_CAL_ADDR (*(uint16_t *)((uint32_t)0x1FF8007E))
+
+/* Vdda value with which temperature sensor has been calibrated in production
+   (+-10 mV). */
+#define VDDA_TEMP_CAL ((uint32_t)3000)
+
+/*!
+ * Battery thresholds
+ */
+#define BATTERY_MAX_LEVEL 3000		// mV
+#define BATTERY_MIN_LEVEL 2400		// mV
+#define BATTERY_SHUTDOWN_LEVEL 2300 // mV
+
+#define BATTERY_LORAWAN_UNKNOWN_LEVEL 255
+#define BATTERY_LORAWAN_MAX_LEVEL 254
+#define BATTERY_LORAWAN_MIN_LEVEL 1
+#define BATTERY_LORAWAN_EXT_PWR 0
+
+#define COMPUTE_TEMPERATURE(TS_ADC_DATA, VDDA_APPLI)                                           \
+	(((((((int32_t)((TS_ADC_DATA * VDDA_APPLI) / VDDA_TEMP_CAL) - (int32_t)TEMP30_CAL_ADDR)) * \
+		(int32_t)(110 - 30))                                                                   \
+	   << 8) /                                                                                 \
+	  (int32_t)(TEMP110_CAL_ADDR - TEMP30_CAL_ADDR)) +                                         \
+	 (30 << 8))
+
+static uint16_t BatteryVoltage = BATTERY_MAX_LEVEL;
+
 uint16_t BoardBatteryMeasureVoltage(void)
 {
-	return 0;
+	uint16_t vref = 0;
+
+	// Read the current Voltage
+	vref = AdcReadChannel(&Adc, ADC_CHANNEL_VREFINT);
+
+	// Compute and return the Voltage in millivolt
+	return (((uint32_t)VDDA_VREFINT_CAL * VREFINT_CAL) / vref);
 }
 
 uint32_t BoardGetBatteryVoltage(void)
 {
-	return 0;
+	return BatteryVoltage;
 }
 
 uint8_t BoardGetBatteryLevel(void)
 {
-	return 0;
+	uint8_t batteryLevel = 0;
+
+	BatteryVoltage = BoardBatteryMeasureVoltage();
+
+	if (GetBoardPowerSource() == USB_POWER)
+	{
+		batteryLevel = BATTERY_LORAWAN_EXT_PWR;
+	}
+	else
+	{
+		if (BatteryVoltage >= BATTERY_MAX_LEVEL)
+		{
+			batteryLevel = BATTERY_LORAWAN_MAX_LEVEL;
+		}
+		else if ((BatteryVoltage > BATTERY_MIN_LEVEL) && (BatteryVoltage < BATTERY_MAX_LEVEL))
+		{
+			batteryLevel =
+				((253 * (BatteryVoltage - BATTERY_MIN_LEVEL)) / (BATTERY_MAX_LEVEL - BATTERY_MIN_LEVEL)) + 1;
+		}
+		else if ((BatteryVoltage > BATTERY_SHUTDOWN_LEVEL) && (BatteryVoltage <= BATTERY_MIN_LEVEL))
+		{
+			batteryLevel = 1;
+		}
+		else // if( BatteryVoltage <= BATTERY_SHUTDOWN_LEVEL )
+		{
+			batteryLevel = BATTERY_LORAWAN_UNKNOWN_LEVEL;
+		}
+	}
+	return batteryLevel;
+}
+
+int16_t BoardGetTemperature(void)
+{
+	uint16_t tempRaw = 0;
+
+	BatteryVoltage = BoardBatteryMeasureVoltage();
+
+	tempRaw = AdcReadChannel(&Adc, ADC_CHANNEL_TEMPSENSOR);
+
+	// Compute and return the temperature in degree celcius * 256
+	return (int16_t)COMPUTE_TEMPERATURE(tempRaw, BatteryVoltage);
 }
 
 static void BoardUnusedIoInit(void)
@@ -424,6 +329,55 @@ static void BoardUnusedIoInit(void)
 	HAL_DBGMCU_EnableDBGSleepMode();
 	HAL_DBGMCU_EnableDBGStopMode();
 	HAL_DBGMCU_EnableDBGStandbyMode();
+}
+
+void SystemClockConfig(void)
+{
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+	__HAL_RCC_PWR_CLK_ENABLE();
+
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_6;
+	RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_3;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
+		assert_param(LMN_STATUS_ERROR);
+	}
+
+	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+	{
+		assert_param(LMN_STATUS_ERROR);
+	}
+
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+	{
+		assert_param(LMN_STATUS_ERROR);
+	}
+
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+	// SysTick_IRQn interrupt configuration
+	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 void SystemClockReConfig(void)
@@ -475,10 +429,10 @@ uint8_t GetBoardPowerSource(void)
 }
 
 /**
- * \brief Enters Low Power Stop Mode
- *
- * \note ARM exists the function when waking up
- */
+  * \brief Enters Low Power Stop Mode
+  *
+  * \note ARM exists the function when waking up
+  */
 void LpmEnterStopMode(void)
 {
 	CRITICAL_SECTION_BEGIN();
@@ -504,8 +458,8 @@ void LpmEnterStopMode(void)
 }
 
 /*!
-* \brief Exists Low Power Stop Mode
-*/
+ * \brief Exists Low Power Stop Mode
+ */
 void LpmExitStopMode(void)
 {
 	// Disable IRQ while the MCU is not running on HSI
@@ -518,10 +472,10 @@ void LpmExitStopMode(void)
 }
 
 /*!
-* \brief Enters Low Power Sleep Mode
-*
-* \note ARM exits the function when waking up
-*/
+ * \brief Enters Low Power Sleep Mode
+ *
+ * \note ARM exits the function when waking up
+ */
 void LpmEnterSleepMode(void)
 {
 	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
@@ -531,11 +485,11 @@ void BoardLowPowerHandler(void)
 {
 	__disable_irq();
 	/*!
-* If an interrupt has occurred after __disable_irq( ), it is kept pending
-* and cortex will not enter low power anyway
-*/
+     * If an interrupt has occurred after __disable_irq( ), it is kept pending 
+     * and cortex will not enter low power anyway
+     */
 
-	//LpmEnterLowPower( );
+	LpmEnterLowPower();
 
 	__enable_irq();
 }
@@ -543,8 +497,8 @@ void BoardLowPowerHandler(void)
 #if !defined(__CC_ARM)
 
 /*
-* Function to be used by stdout for printf etc
-*/
+ * Function to be used by stdout for printf etc
+ */
 int _write(int fd, const void *buf, size_t count)
 {
 	while (UartPutBuffer(&Uart2, (uint8_t *)buf, (uint16_t)count) != 0)
@@ -554,8 +508,8 @@ int _write(int fd, const void *buf, size_t count)
 }
 
 /*
-* Function to be used by stdin for scanf etc
-*/
+ * Function to be used by stdin for scanf etc
+ */
 int _read(int fd, const void *buf, size_t count)
 {
 	size_t bytesRead = 0;
@@ -599,18 +553,18 @@ int fgetc(FILE *stream)
 #include <stdio.h>
 
 /*
-* Function Name  : assert_failed
-* Description    : Reports the name of the source file and the source line number
-*                  where the assert_param error has occurred.
-* Input          : - file: pointer to the source file name
-*                  - line: assert_param error line source number
-* Output         : None
-* Return         : None
-*/
+ * Function Name  : assert_failed
+ * Description    : Reports the name of the source file and the source line number
+ *                  where the assert_param error has occurred.
+ * Input          : - file: pointer to the source file name
+ *                  - line: assert_param error line source number
+ * Output         : None
+ * Return         : None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
 	/* User can add his own implementation to report the file name and line number,
-ex: printf("Wrong parameters value: file %s on line %lu\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %lu\n", file, line) */
 
 	printf("Wrong parameters value: file %s on line %lu\n", (const char *)file, line);
 	/* Infinite loop */

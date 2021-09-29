@@ -109,6 +109,9 @@
         "githubversion.h": "c",
         "regioncommon.h": "c",
         "cli.h": "c",
-        "uart.h": "c"
+        "uart.h": "c",
+        "adc.h": "c",
+        "utilities.h": "c",
+        "firmwareversion.h": "c"
     }
 }

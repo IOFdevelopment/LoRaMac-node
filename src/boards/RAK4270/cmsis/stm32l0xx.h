@@ -91,7 +91,7 @@
   /* #define STM32L061xx */   /*!< */
   /* #define STM32L062xx */   /*!< STM32L062K8 */
   /* #define STM32L063xx */   /*!< STM32L063C8, STM32L063R8 */ 
-  /* #define STM32L071xx */   /*!< */
+  #define STM32L071xx   /*!< */
   /* #define STM32L072xx */   /*!< */
   /* #define STM32L073xx */   /*!< STM32L073V8, STM32L073VB, STM32L073RB, STM32L073VZ, STM32L073RZ Devices */
   /* #define STM32L081xx */   /*!< */
@@ -127,7 +127,7 @@
   * @}
   */
 
- #define STM32L071xx
+//  #define STM32L071xx
 
 /** @addtogroup Device_Included
   * @{
@@ -167,6 +167,8 @@
 #else
  #error "Please select first the target STM32L0xx device used in your application (in stm32l0xx.h file)"
 #endif
+
+// #undef STM32L071xx
 
 /**
   * @}

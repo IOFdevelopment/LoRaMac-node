@@ -30,26 +30,26 @@ extern "C"
 
 #include "adc.h"
 
-/*!
+    /*!
  * \brief Initializes the ADC object and MCU peripheral
  *
  * \param [IN] obj      ADC object
  * \param [IN] adcInput ADC input pin
  */
-void AdcMcuInit( Adc_t *obj, PinNames adcInput );
+    void AdcMcuInit(Adc_t *obj, PinNames adcInput);
 
-/*!
+    /*!
  * \brief Initializes the ADC internal parameters
  */
-void AdcMcuConfig( void );
+    void AdcMcuConfig(void);
 
-/*!
+    /*!
  * \brief Reads the value of the given channel
  *
  * \param [IN] obj     ADC object
  * \param [IN] channel ADC input channel
  */
-uint16_t AdcMcuReadChannel( Adc_t *obj, uint32_t channel );
+    uint16_t AdcMcuReadChannel(Adc_t *obj, uint32_t channel);
 
 #ifdef __cplusplus
 }
