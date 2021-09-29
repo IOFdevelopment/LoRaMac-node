@@ -105,6 +105,10 @@
         "hal_gpio.h": "c",
         "stm32l0xx_hal.h": "c",
         "delay.h": "c",
-        "delay-board.h": "c"
+        "delay-board.h": "c",
+        "githubversion.h": "c",
+        "regioncommon.h": "c",
+        "cli.h": "c",
+        "uart.h": "c"
     }
 }

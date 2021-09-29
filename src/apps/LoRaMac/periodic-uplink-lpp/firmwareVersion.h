@@ -21,10 +21,11 @@
 #define __FIRMWARE_VERSION_H__
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#define FIRMWARE_VERSION                            0x01020000 // 1.2.0.0
+#define FIRMWARE_VERSION 0x01020000 // 1.2.0.0
 
 #ifdef __cplusplus
 }
