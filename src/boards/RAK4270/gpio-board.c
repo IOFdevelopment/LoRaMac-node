@@ -26,68 +26,67 @@
 #include "board-config.h"
 #include "rtc-board.h"
 #include "gpio-board.h"
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
 #include "gpio-ioe.h"
 #endif
 
 static Gpio_t *GpioIrq[16];
 
-
-void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, PinTypes type, uint32_t value )
+void GpioMcuInit(Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, PinTypes type, uint32_t value)
 {
-    if( pin < IOE_0 )
+    if (pin < IOE_0)
     {
         GPIO_InitTypeDef GPIO_InitStructure;
 
         obj->pin = pin;
 
-        if( pin == NC )
+        if (pin == NC)
         {
             return;
         }
 
-        obj->pinIndex = ( 0x01 << ( obj->pin & 0x0F ) );
+        obj->pinIndex = (0x01 << (obj->pin & 0x0F));
 
-        if( ( obj->pin & 0xF0 ) == 0x00 )
+        if ((obj->pin & 0xF0) == 0x00)
         {
             obj->port = GPIOA;
-            __HAL_RCC_GPIOA_CLK_ENABLE( );
+            __HAL_RCC_GPIOA_CLK_ENABLE();
         }
-        else if( ( obj->pin & 0xF0 ) == 0x10 )
+        else if ((obj->pin & 0xF0) == 0x10)
         {
             obj->port = GPIOB;
-            __HAL_RCC_GPIOB_CLK_ENABLE( );
+            __HAL_RCC_GPIOB_CLK_ENABLE();
         }
-        else if( ( obj->pin & 0xF0 ) == 0x20 )
+        else if ((obj->pin & 0xF0) == 0x20)
         {
             obj->port = GPIOC;
-            __HAL_RCC_GPIOC_CLK_ENABLE( );
+            __HAL_RCC_GPIOC_CLK_ENABLE();
         }
-        else if( ( obj->pin & 0xF0 ) == 0x30 )
+        else if ((obj->pin & 0xF0) == 0x30)
         {
             obj->port = GPIOD;
-            __HAL_RCC_GPIOD_CLK_ENABLE( );
+            __HAL_RCC_GPIOD_CLK_ENABLE();
         }
         else
         {
-            assert_param( LMN_STATUS_ERROR );
+            assert_param(LMN_STATUS_ERROR);
         }
 
-        GPIO_InitStructure.Pin =  obj->pinIndex ;
+        GPIO_InitStructure.Pin = obj->pinIndex;
         GPIO_InitStructure.Pull = obj->pull = type;
         GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
 
-        if( mode == PIN_INPUT )
+        if (mode == PIN_INPUT)
         {
             GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
         }
-        else if( mode == PIN_ANALOGIC )
+        else if (mode == PIN_ANALOGIC)
         {
             GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
         }
-        else if( mode == PIN_ALTERNATE_FCT )
+        else if (mode == PIN_ALTERNATE_FCT)
         {
-            if( config == PIN_OPEN_DRAIN )
+            if (config == PIN_OPEN_DRAIN)
             {
                 GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
             }
@@ -99,7 +98,7 @@ void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, P
         }
         else // mode output
         {
-            if( config == PIN_OPEN_DRAIN )
+            if (config == PIN_OPEN_DRAIN)
             {
                 GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD;
             }
@@ -110,50 +109,50 @@ void GpioMcuInit( Gpio_t *obj, PinNames pin, PinModes mode, PinConfigs config, P
         }
 
         // Sets initial output value
-        if( mode == PIN_OUTPUT )
+        if (mode == PIN_OUTPUT)
         {
-            GpioMcuWrite( obj, value );
+            GpioMcuWrite(obj, value);
         }
 
-        HAL_GPIO_Init( obj->port, &GPIO_InitStructure );
+        HAL_GPIO_Init(obj->port, &GPIO_InitStructure);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        GpioIoeInit( obj, pin, mode, config, type, value );
+        GpioIoeInit(obj, pin, mode, config, type, value);
 #endif
     }
 }
 
-void GpioMcuSetContext( Gpio_t *obj, void* context )
+void GpioMcuSetContext(Gpio_t *obj, void *context)
 {
     obj->Context = context;
 }
 
-void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler )
+void GpioMcuSetInterrupt(Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriority, GpioIrqHandler *irqHandler)
 {
-    if( obj->pin < IOE_0 )
+    if (obj->pin < IOE_0)
     {
         uint32_t priority = 0;
 
         IRQn_Type IRQnb = EXTI0_1_IRQn;
-        GPIO_InitTypeDef   GPIO_InitStructure;
+        GPIO_InitTypeDef GPIO_InitStructure;
 
-        if( irqHandler == NULL )
+        if (irqHandler == NULL)
         {
             return;
         }
 
         obj->IrqHandler = irqHandler;
 
-        GPIO_InitStructure.Pin =  obj->pinIndex;
+        GPIO_InitStructure.Pin = obj->pinIndex;
 
-        if( irqMode == IRQ_RISING_EDGE )
+        if (irqMode == IRQ_RISING_EDGE)
         {
             GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING;
         }
-        else if( irqMode == IRQ_FALLING_EDGE )
+        else if (irqMode == IRQ_FALLING_EDGE)
         {
             GPIO_InitStructure.Mode = GPIO_MODE_IT_FALLING;
         }
@@ -165,9 +164,9 @@ void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriori
         GPIO_InitStructure.Pull = obj->pull;
         GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
 
-        HAL_GPIO_Init( obj->port, &GPIO_InitStructure );
+        HAL_GPIO_Init(obj->port, &GPIO_InitStructure);
 
-        switch( irqPriority )
+        switch (irqPriority)
         {
         case IRQ_VERY_LOW_PRIORITY:
         case IRQ_LOW_PRIORITY:
@@ -185,7 +184,7 @@ void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriori
             break;
         }
 
-        switch( obj->pinIndex )
+        switch (obj->pinIndex)
         {
         case GPIO_PIN_0:
         case GPIO_PIN_1:
@@ -213,160 +212,160 @@ void GpioMcuSetInterrupt( Gpio_t *obj, IrqModes irqMode, IrqPriorities irqPriori
             break;
         }
 
-        GpioIrq[( obj->pin ) & 0x0F] = obj;
+        GpioIrq[(obj->pin) & 0x0F] = obj;
 
-        HAL_NVIC_SetPriority( IRQnb , priority, 0 );
-        HAL_NVIC_EnableIRQ( IRQnb );
+        HAL_NVIC_SetPriority(IRQnb, priority, 0);
+        HAL_NVIC_EnableIRQ(IRQnb);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        GpioIoeSetInterrupt( obj, irqMode, irqPriority, irqHandler );
+        GpioIoeSetInterrupt(obj, irqMode, irqPriority, irqHandler);
 #endif
     }
 }
 
-void GpioMcuRemoveInterrupt( Gpio_t *obj )
+void GpioMcuRemoveInterrupt(Gpio_t *obj)
 {
-    if( obj->pin < IOE_0 )
+    if (obj->pin < IOE_0)
     {
         // Clear callback before changing pin mode
-        GpioIrq[( obj->pin ) & 0x0F] = NULL;
+        GpioIrq[(obj->pin) & 0x0F] = NULL;
 
-        GPIO_InitTypeDef   GPIO_InitStructure;
+        GPIO_InitTypeDef GPIO_InitStructure;
 
-        GPIO_InitStructure.Pin =  obj->pinIndex ;
+        GPIO_InitStructure.Pin = obj->pinIndex;
         GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-        HAL_GPIO_Init( obj->port, &GPIO_InitStructure );
+        HAL_GPIO_Init(obj->port, &GPIO_InitStructure);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        GpioIoeRemoveInterrupt( obj );
+        GpioIoeRemoveInterrupt(obj);
 #endif
     }
 }
 
-void GpioMcuWrite( Gpio_t *obj, uint32_t value )
+void GpioMcuWrite(Gpio_t *obj, uint32_t value)
 {
-    if( obj->pin < IOE_0 )
+    if (obj->pin < IOE_0)
     {
-        if( obj == NULL )
+        if (obj == NULL)
         {
-            assert_param( LMN_STATUS_ERROR );
+            assert_param(LMN_STATUS_ERROR);
         }
         // Check if pin is not connected
-        if( obj->pin == NC )
+        if (obj->pin == NC)
         {
             return;
         }
-        HAL_GPIO_WritePin( obj->port, obj->pinIndex , ( GPIO_PinState )value );
+        HAL_GPIO_WritePin(obj->port, obj->pinIndex, (GPIO_PinState)value);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        GpioIoeWrite( obj, value );
+        GpioIoeWrite(obj, value);
 #endif
     }
 }
 
-void GpioMcuToggle( Gpio_t *obj )
+void GpioMcuToggle(Gpio_t *obj)
 {
-    if( obj->pin < IOE_0 )
+    if (obj->pin < IOE_0)
     {
-        if( obj == NULL )
+        if (obj == NULL)
         {
-            assert_param( LMN_STATUS_ERROR );
+            assert_param(LMN_STATUS_ERROR);
         }
 
         // Check if pin is not connected
-        if( obj->pin == NC )
+        if (obj->pin == NC)
         {
             return;
         }
-        HAL_GPIO_TogglePin( obj->port, obj->pinIndex );
+        HAL_GPIO_TogglePin(obj->port, obj->pinIndex);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        GpioIoeToggle( obj );
+        GpioIoeToggle(obj);
 #endif
     }
 }
 
-uint32_t GpioMcuRead( Gpio_t *obj )
+uint32_t GpioMcuRead(Gpio_t *obj)
 {
-    if( obj->pin < IOE_0 )
+    if (obj->pin < IOE_0)
     {
-        if( obj == NULL )
+        if (obj == NULL)
         {
-            assert_param( LMN_STATUS_ERROR );
+            assert_param(LMN_STATUS_ERROR);
         }
         // Check if pin is not connected
-        if( obj->pin == NC )
+        if (obj->pin == NC)
         {
             return 0;
         }
-        return HAL_GPIO_ReadPin( obj->port, obj->pinIndex );
+        return HAL_GPIO_ReadPin(obj->port, obj->pinIndex);
     }
     else
     {
-#if defined( BOARD_IOE_EXT )
+#if defined(BOARD_IOE_EXT)
         // IOExt Pin
-        return GpioIoeRead( obj );
+        return GpioIoeRead(obj);
 #else
         return 0;
 #endif
     }
 }
 
-void EXTI0_1_IRQHandler( void )
+void EXTI0_1_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_0 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_1 );
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
 }
 
-void EXTI2_3_IRQHandler( void )
+void EXTI2_3_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_2 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_3 );
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
 }
 
-void EXTI4_15_IRQHandler( void )
+void EXTI4_15_IRQHandler(void)
 {
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_4 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_5 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_6 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_7 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_8 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_9 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_10 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_11 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_12 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
-    HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_15 );
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
 }
 
-void HAL_GPIO_EXTI_Callback( uint16_t gpioPin )
+void HAL_GPIO_EXTI_Callback(uint16_t gpioPin)
 {
     uint8_t callbackIndex = 0;
 
-    if( gpioPin > 0 )
+    if (gpioPin > 0)
     {
-        while( gpioPin != 0x01 )
+        while (gpioPin != 0x01)
         {
             gpioPin = gpioPin >> 1;
             callbackIndex++;
         }
     }
 
-    if( ( GpioIrq[callbackIndex] != NULL ) && ( GpioIrq[callbackIndex]->IrqHandler != NULL ) )
+    if ((GpioIrq[callbackIndex] != NULL) && (GpioIrq[callbackIndex]->IrqHandler != NULL))
     {
-        GpioIrq[callbackIndex]->IrqHandler( GpioIrq[callbackIndex]->Context );
+        GpioIrq[callbackIndex]->IrqHandler(GpioIrq[callbackIndex]->Context);
     }
 }

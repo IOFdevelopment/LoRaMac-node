@@ -152,6 +152,7 @@ uint16_t SpiInOut(Spi_t *obj, uint16_t outData)
 
     CRITICAL_SECTION_BEGIN();
 
+    
     while (__HAL_SPI_GET_FLAG(&SpiHandle[obj->SpiId], SPI_FLAG_TXE) == RESET)
         ;
     SpiHandle[obj->SpiId].Instance->DR = (uint16_t)(outData & 0xFF);

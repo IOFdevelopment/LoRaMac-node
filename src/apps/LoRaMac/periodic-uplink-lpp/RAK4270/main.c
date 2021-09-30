@@ -28,6 +28,7 @@
 #include "board.h"
 #include "gpio.h"
 #include "uart.h"
+#include "delay.h"
 #include "RegionCommon.h"
 
 #include "cli.h"
@@ -159,11 +160,9 @@ static void OnTxData(LmHandlerTxParams_t *params);
 static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params);
 static void OnClassChange(DeviceClass_t deviceClass);
 static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params);
-#if (LMH_SYS_TIME_UPDATE_NEW_API == 1)
+
 static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection);
-#else
-static void OnSysTimeUpdate(void);
-#endif
+
 static void PrepareTxFrame(void);
 static void StartTxProcess(LmHandlerTxEvents_t txEvent);
 static void UplinkProcess(void);
@@ -261,6 +260,8 @@ int main(void)
     BoardInitMcu();
     BoardInitPeriph();
 
+    uint8_t buff[16] = {'1', '2', '3', '4', '5', '6', '7', '8'};
+
     TimerInit(&Led1Timer, OnLed1TimerEvent);
     TimerSetValue(&Led1Timer, 25);
 
@@ -285,44 +286,53 @@ int main(void)
         // Fatal error, endless loop.
         while (1)
         {
+            GpioToggle(&Led1);
+            DelayMs(10);
         }
     }
-
-    // Set system maximum tolerated rx error in milliseconds
-    LmHandlerSetSystemMaxRxError(20);
-
-    // The LoRa-Alliance Compliance protocol package should always be
-    // initialized and activated.
-    LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
-
-    LmHandlerJoin();
-
-    StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
     while (1)
     {
-        // Process characters sent over the command line interface
-        CliProcess(&Uart2);
-
-        // Processes the LoRaMac events
-        LmHandlerProcess();
-
-        // Process application uplinks management
-        UplinkProcess();
-
-        CRITICAL_SECTION_BEGIN();
-        if (IsMacProcessPending == 1)
-        {
-            // Clear flag and prevent MCU to go into low power modes.
-            IsMacProcessPending = 0;
-        }
-        else
-        {
-            // The MCU wakes up through events
-            BoardLowPowerHandler();
-        }
-        CRITICAL_SECTION_END();
+        GpioToggle(&Led1);
+        UartPutBuffer(&Uart2, buff, 8);
+        DelayMs(1000);
     }
+
+    // // Set system maximum tolerated rx error in milliseconds
+    // LmHandlerSetSystemMaxRxError(20);
+
+    // // The LoRa-Alliance Compliance protocol package should always be
+    // // initialized and activated.
+    // LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
+
+    // LmHandlerJoin();
+
+    // StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
+
+    // while (1)
+    // {
+    //     // Process characters sent over the command line interface
+    //     CliProcess(&Uart2);
+
+    //     // Processes the LoRaMac events
+    //     LmHandlerProcess();
+
+    //     // Process application uplinks management
+    //     UplinkProcess();
+
+    //     CRITICAL_SECTION_BEGIN();
+    //     if (IsMacProcessPending == 1)
+    //     {
+    //         // Clear flag and prevent MCU to go into low power modes.
+    //         IsMacProcessPending = 0;
+    //     }
+    //     else
+    //     {
+    //         // The MCU wakes up through events
+    //         BoardLowPowerHandler();
+    //     }
+    //     CRITICAL_SECTION_END();
+    // }
 }
 
 static void OnMacProcessNotify(void)
@@ -427,15 +437,9 @@ static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params)
     DisplayBeaconUpdate(params);
 }
 
-#if (LMH_SYS_TIME_UPDATE_NEW_API == 1)
 static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection)
 {
 }
-#else
-static void OnSysTimeUpdate(void)
-{
-}
-#endif
 
 /*!
  * Prepares the payload of the frame and transmits it.

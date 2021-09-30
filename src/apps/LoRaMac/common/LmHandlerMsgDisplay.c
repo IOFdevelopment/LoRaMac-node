@@ -420,9 +420,9 @@ void DisplayClassUpdate( DeviceClass_t deviceClass )
 
 void DisplayAppInfo( const char* appName, const Version_t* appVersion, const Version_t* gitHubVersion )
 {
-    printf( "\n###### ===================================== ######\n\n" );
-    printf( "Application name   : %s\n", appName );
-    printf( "Application version: %d.%d.%d\n", appVersion->Fields.Major, appVersion->Fields.Minor, appVersion->Fields.Patch );
-    printf( "GitHub base version: %d.%d.%d\n", gitHubVersion->Fields.Major, gitHubVersion->Fields.Minor, gitHubVersion->Fields.Patch );
-    printf( "\n###### ===================================== ######\n\n" );
+    printf( "\r\n###### ===================================== ######\r\n\r\n" );
+    printf( "Application name   : %s\r\n", appName );
+    printf( "Application version: %d.%d.%d\r\n", appVersion->Fields.Major, appVersion->Fields.Minor, appVersion->Fields.Patch );
+    printf( "GitHub base version: %d.%d.%d\r\n", gitHubVersion->Fields.Major, gitHubVersion->Fields.Minor, gitHubVersion->Fields.Patch );
+    printf( "\r\n###### ===================================== ######\r\n\r\n" );
 }

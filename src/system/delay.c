@@ -22,15 +22,17 @@
  */
 #include "delay-board.h"
 #include "delay.h"
-#include "stm32l0xx_hal.h"
+// TODO: use delay board
+// #include "stm32l0xx_hal.h"
 
-void Delay( float s )
+void Delay(float s)
 {
-    DelayMs( s * 1000.0f );
+    DelayMs(s * 1000.0f);
 }
 
-void DelayMs( uint32_t ms )
+void DelayMs(uint32_t ms)
 {
     // DelayMs( ms );
-    HAL_Delay(ms);
+    // HAL_Delay(ms);
+    DelayMsMcu(ms);
 }

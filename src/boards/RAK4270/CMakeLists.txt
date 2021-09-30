@@ -29,6 +29,7 @@ list(APPEND ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/adc-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/eeprom-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lpm-board.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/delay-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/pinName-board.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/pinName-ioe.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/rtc-board.c"
