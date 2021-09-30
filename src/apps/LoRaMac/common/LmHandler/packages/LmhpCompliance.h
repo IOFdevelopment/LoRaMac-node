@@ -25,16 +25,16 @@
 #include "LmHandlerTypes.h"
 #include "LmhPackage.h"
 
-/*!
- * Compliance package identifier.
- * 
- * \remark This value must be unique amongst the packages
- */
+ /*!
+  * Compliance package identifier.
+  *
+  * \remark This value must be unique amongst the packages
+  */
 #define PACKAGE_ID_COMPLIANCE                       0
 
-/*!
- * Compliance test protocol handler parameters
- */
+  /*!
+   * Compliance test protocol handler parameters
+   */
 typedef struct LmhpComplianceParams_s
 {
     /*!
@@ -44,17 +44,17 @@ typedef struct LmhpComplianceParams_s
     /*!
      *
      */
-    void ( *OnTxPeriodicityChanged )( uint32_t periodicity );
+    void (*OnTxPeriodicityChanged)(uint32_t periodicity);
     /*!
      *
      */
-    void ( *OnTxFrameCtrlChanged )( LmHandlerMsgTypes_t isTxConfirmed );
+    void (*OnTxFrameCtrlChanged)(LmHandlerMsgTypes_t isTxConfirmed);
     /*!
      *
      */
-    void ( *OnPingSlotPeriodicityChanged )( uint8_t pingSlotPeriodicity );
+    void (*OnPingSlotPeriodicityChanged)(uint8_t pingSlotPeriodicity);
 }LmhpComplianceParams_t;
 
-LmhPackage_t *LmphCompliancePackageFactory( void );
+LmhPackage_t* LmphCompliancePackageFactory(void);
 
 #endif // __LMHP_COMPLIANCE__

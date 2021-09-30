@@ -27,7 +27,7 @@
 
 #include "soft-se-hal.h"
 
-void SoftSeHalGetUniqueId( uint8_t *id )
+void SoftSeHalGetUniqueId(uint8_t *id)
 {
-    BoardGetUniqueId( id );
+    BoardGetUniqueId(id);
 }

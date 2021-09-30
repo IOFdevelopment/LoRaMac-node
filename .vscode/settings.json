@@ -10,14 +10,14 @@
         //     Linux   : /usr
         //     OSX     : /usr/local
         // It is required to uncomment and to fill the following line.
-        "TOOLCHAIN_PREFIX":"${workspaceFolder}/../gcc-arm-none-eabi-9-2020-q2-update-win32/",
+        "TOOLCHAIN_PREFIX":"C:/ToolchainRAK/gcc-arm-none-eabi-9-2020-q2-update-win32/",
 
         // In case your OpenOCD is not installed under the default path:
         //     Windows : C:/openocd/bin/openocd.exe
         //     Linux   : /usr/bin/openocd
         //     OSX     : /usr/local/bin/openocd
         // Please uncomment the following line and fill it accordingly.
-        "OPENOCD_BIN":"${workspaceFolder}/../openocd/bin/openocd.exe",
+        "OPENOCD_BIN":"C:/ToolchainRAK/openocd/bin/openocd.exe",
 
         // Specifies the path to the CMAKE toolchain file.
         "CMAKE_TOOLCHAIN_FILE":"cmake/toolchain-arm-none-eabi.cmake",
@@ -62,7 +62,8 @@
         "SECURE_ELEMENT":"SOFT_SE",
 
         // Secure element is pre-provisioned
-        "SECURE_ELEMENT_PRE_PROVISIONED":"ON",
+        // "SECURE_ELEMENT_PRE_PROVISIONED":"ON",
+        "SECURE_ELEMENT_PRE_PROVISIONED":"OFF",
 
         // Region support activation, Select the ones you want to support.
         // By default only REGION_EU868 support is enabled.
@@ -112,6 +113,9 @@
         "uart.h": "c",
         "adc.h": "c",
         "utilities.h": "c",
-        "firmwareversion.h": "c"
+        "firmwareversion.h": "c",
+        "se-identity.h": "c",
+        "lmhandler.h": "c",
+        "lmhpcompliance.h": "c"
     }
 }

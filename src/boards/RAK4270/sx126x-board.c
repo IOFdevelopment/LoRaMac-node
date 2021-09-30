@@ -20,6 +20,7 @@
  *
  * \author    Gregory Cristian ( Semtech )
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include "utilities.h"
 #include "board-config.h"
@@ -53,7 +54,7 @@ static RadioOperatingModes_t OperatingMode;
  * Antenna switch GPIO pins objects
  */
 Gpio_t AntPow;
-Gpio_t DeviceSel;
+// Gpio_t DeviceSel;
 
 /*!
  * Debug GPIO pins objects
@@ -93,7 +94,11 @@ void SX126xIoDbgInit(void)
 
 void SX126xIoTcxoInit(void)
 {
-    // No TCXO component available on this board design.
+    CalibrationParams_t calibParam;
+
+    SX126xSetDio3AsTcxoCtrl(TCXO_CTRL_1_7V, SX126xGetBoardTcxoWakeupTime() << 6); // convert from ms to SX126x time base
+    calibParam.Value = 0x7F;
+    SX126xCalibrate(calibParam);
 }
 
 uint32_t SX126xGetBoardTcxoWakeupTime(void)
@@ -146,7 +151,8 @@ void SX126xReset(void)
 void SX126xWaitOnBusy(void)
 {
     while (GpioRead(&SX126x.BUSY) == 1)
-        ;
+    {
+    }
 }
 
 void SX126xWakeup(void)
@@ -155,7 +161,6 @@ void SX126xWakeup(void)
 
     GpioWrite(&SX126x.Spi.Nss, 0);
 
-    // ACA SE ESTÁ QUEDANDO!
     SpiInOut(&SX126x.Spi, RADIO_GET_STATUS);
     SpiInOut(&SX126x.Spi, 0x00);
 
@@ -306,14 +311,7 @@ void SX126xSetRfTxPower(int8_t power)
 
 uint8_t SX126xGetDeviceId(void)
 {
-    if (GpioRead(&DeviceSel) == 1)
-    {
-        return SX1261;
-    }
-    else
-    {
-        return SX1262;
-    }
+    return SX1262;
 }
 
 void SX126xAntSwOn(void)

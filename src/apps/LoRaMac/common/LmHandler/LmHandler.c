@@ -1,7 +1,7 @@
 /*!
  * \file      LmHandler.c
  *
- * \brief     Implements the LoRaMac layer handling. 
+ * \brief     Implements the LoRaMac layer handling.
  *            Provides the possibility to register applicative packages.
  *
  * \remark    Inspired by the examples provided on the en.i-cube_lrwan fork.
@@ -48,26 +48,26 @@
 #include "LoRaMacTest.h"
 
 static CommissioningParams_t CommissioningParams =
-    {
-        .IsOtaaActivation = OVER_THE_AIR_ACTIVATION,
-        .DevEui = {0},  // Automatically filed from secure-element
-        .JoinEui = {0}, // Automatically filed from secure-element
-        .SePin = {0},   // Automatically filed from secure-element
-        .NetworkId = LORAWAN_NETWORK_ID,
-        .DevAddr = LORAWAN_DEVICE_ADDRESS,
+{
+    .IsOtaaActivation = OVER_THE_AIR_ACTIVATION,
+    .DevEui = {0},  // Automatically filed from secure-element
+    .JoinEui = {0}, // Automatically filed from secure-element
+    .SePin = {0},   // Automatically filed from secure-element
+    .NetworkId = LORAWAN_NETWORK_ID,
+    .DevAddr = LORAWAN_DEVICE_ADDRESS,
 };
 
-static LmhPackage_t *LmHandlerPackages[PKG_MAX_NUMBER];
+static LmhPackage_t* LmHandlerPackages[PKG_MAX_NUMBER];
 
 /*!
  * Upper layer LoRaMac parameters
  */
-static LmHandlerParams_t *LmHandlerParams;
+static LmHandlerParams_t* LmHandlerParams;
 
 /*!
  * Upper layer callbacks
  */
-static LmHandlerCallbacks_t *LmHandlerCallbacks;
+static LmHandlerCallbacks_t* LmHandlerCallbacks;
 
 /*!
  * Used to notify LmHandler of LoRaMac events
@@ -80,53 +80,53 @@ static LoRaMacPrimitives_t LoRaMacPrimitives;
 static LoRaMacCallback_t LoRaMacCallbacks;
 
 static LmHandlerJoinParams_t JoinParams =
-    {
-        .CommissioningParams = &CommissioningParams,
-        .Datarate = DR_0,
-        .Status = LORAMAC_HANDLER_ERROR};
+{
+    .CommissioningParams = &CommissioningParams,
+    .Datarate = DR_0,
+    .Status = LORAMAC_HANDLER_ERROR };
 
 static LmHandlerTxParams_t TxParams =
-    {
-        .CommissioningParams = &CommissioningParams,
-        .MsgType = LORAMAC_HANDLER_UNCONFIRMED_MSG,
-        .AckReceived = 0,
-        .Datarate = DR_0,
-        .UplinkCounter = 0,
-        .AppData =
-            {
-                .Port = 0,
-                .BufferSize = 0,
-                .Buffer = NULL,
-            },
-        .TxPower = TX_POWER_0,
-        .Channel = 0,
+{
+    .CommissioningParams = &CommissioningParams,
+    .MsgType = LORAMAC_HANDLER_UNCONFIRMED_MSG,
+    .AckReceived = 0,
+    .Datarate = DR_0,
+    .UplinkCounter = 0,
+    .AppData =
+        {
+            .Port = 0,
+            .BufferSize = 0,
+            .Buffer = NULL,
+        },
+    .TxPower = TX_POWER_0,
+    .Channel = 0,
 };
 
 static LmHandlerRxParams_t RxParams =
-    {
-        .CommissioningParams = &CommissioningParams,
-        .Rssi = 0,
-        .Snr = 0,
-        .DownlinkCounter = 0,
-        .RxSlot = -1,
+{
+    .CommissioningParams = &CommissioningParams,
+    .Rssi = 0,
+    .Snr = 0,
+    .DownlinkCounter = 0,
+    .RxSlot = -1,
 };
 
 static LoRaMacHandlerBeaconParams_t BeaconParams =
-    {
-        .State = LORAMAC_HANDLER_BEACON_ACQUIRING,
-        .Info =
-            {
-                .Time = {.Seconds = 0, .SubSeconds = 0},
-                .Frequency = 0,
-                .Datarate = 0,
-                .Rssi = 0,
-                .Snr = 0,
-                .GwSpecific =
-                    {
-                        .InfoDesc = 0,
-                        .Info = {0},
-                    },
-            },
+{
+    .State = LORAMAC_HANDLER_BEACON_ACQUIRING,
+    .Info =
+        {
+            .Time = {.Seconds = 0, .SubSeconds = 0},
+            .Frequency = 0,
+            .Datarate = 0,
+            .Rssi = 0,
+            .Snr = 0,
+            .GwSpecific =
+                {
+                    .InfoDesc = 0,
+                    .Info = {0},
+                },
+        },
 };
 
 /*!
@@ -147,7 +147,7 @@ static TimerTime_t DutyCycleWaitTime = 0;
 
 /*!
  * Indicates if an uplink is pending upon MAC layer request
- * 
+ *
  * TODO: Create a new structure to store the current handler states/status
  *       and add the below variable to it.
  */
@@ -159,7 +159,7 @@ static bool IsUplinkTxPending = false;
  * \param   [IN] mcpsConfirm - Pointer to the confirm structure,
  *                             containing confirm attributes.
  */
-static void McpsConfirm(McpsConfirm_t *mcpsConfirm);
+static void McpsConfirm(McpsConfirm_t* mcpsConfirm);
 
 /*!
  * \brief   MCPS-Indication event function
@@ -167,7 +167,7 @@ static void McpsConfirm(McpsConfirm_t *mcpsConfirm);
  * \param   [IN] mcpsIndication - Pointer to the indication structure,
  *               containing indication attributes.
  */
-static void McpsIndication(McpsIndication_t *mcpsIndication);
+static void McpsIndication(McpsIndication_t* mcpsIndication);
 
 /*!
  * \brief   MLME-Confirm event function
@@ -175,7 +175,7 @@ static void McpsIndication(McpsIndication_t *mcpsIndication);
  * \param   [IN] MlmeConfirm - Pointer to the confirm structure,
  *               containing confirm attributes.
  */
-static void MlmeConfirm(MlmeConfirm_t *mlmeConfirm);
+static void MlmeConfirm(MlmeConfirm_t* mlmeConfirm);
 
 /*!
  * \brief   MLME-Indication event function
@@ -183,7 +183,7 @@ static void MlmeConfirm(MlmeConfirm_t *mlmeConfirm);
  * \param   [IN] mlmeIndication - Pointer to the indication structure,
  *               containing indication attributes.
  */
-static void MlmeIndication(MlmeIndication_t *mlmeIndication);
+static void MlmeIndication(MlmeIndication_t* mlmeIndication);
 
 /*!
  * Requests network server time update
@@ -222,14 +222,14 @@ typedef enum PackageNotifyTypes_e
  * \param[IN] params      Notification parameters. The params type can be
  *                        [McpsConfirm_t, McpsIndication_t, MlmeConfirm_t, MlmeIndication_t]
  */
-static void LmHandlerPackagesNotify(PackageNotifyTypes_t notifyType, void *params);
+static void LmHandlerPackagesNotify(PackageNotifyTypes_t notifyType, void* params);
 
 static bool LmHandlerPackageIsTxPending(void);
 
 static void LmHandlerPackagesProcess(void);
 
-LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
-                                     LmHandlerParams_t *handlerParams)
+LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t* handlerCallbacks,
+    LmHandlerParams_t* handlerParams)
 {
     //
     uint16_t nbNvmData = 0;
@@ -389,11 +389,11 @@ void LmHandlerProcess(void)
     {
         // Send an empty message
         LmHandlerAppData_t appData =
-            {
-                .Buffer = NULL,
-                .BufferSize = 0,
-                .Port = 0,
-            };
+        {
+            .Buffer = NULL,
+            .BufferSize = 0,
+            .Port = 0,
+        };
 
         if (LmHandlerSend(&appData, LmHandlerParams->IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
         {
@@ -468,7 +468,7 @@ LmHandlerFlagStatus_t LmHandlerJoinStatus(void)
     }
 }
 
-LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTypes_t isTxConfirmed)
+LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t* appData, LmHandlerMsgTypes_t isTxConfirmed)
 {
     LoRaMacStatus_t status;
     McpsReq_t mcpsReq;
@@ -575,11 +575,11 @@ LmHandlerErrorStatus_t LmHandlerPingSlotReq(uint8_t periodicity)
     {
         // Send an empty message
         LmHandlerAppData_t appData =
-            {
-                .Buffer = NULL,
-                .BufferSize = 0,
-                .Port = 0,
-            };
+        {
+            .Buffer = NULL,
+            .BufferSize = 0,
+            .Port = 0,
+        };
         return LmHandlerSend(&appData, LmHandlerParams->IsTxConfirmed);
     }
     else
@@ -603,54 +603,54 @@ LmHandlerErrorStatus_t LmHandlerRequestClass(DeviceClass_t newClass)
     {
         switch (newClass)
         {
-        case CLASS_A:
-        {
-            if (currentClass != CLASS_A)
-            {
-                mibReq.Param.Class = CLASS_A;
-                if (LoRaMacMibSetRequestConfirm(&mibReq) == LORAMAC_STATUS_OK)
+            case CLASS_A:
                 {
+                    if (currentClass != CLASS_A)
+                    {
+                        mibReq.Param.Class = CLASS_A;
+                        if (LoRaMacMibSetRequestConfirm(&mibReq) == LORAMAC_STATUS_OK)
+                        {
+                            // Switch is instantaneous
+                            LmHandlerCallbacks->OnClassChange(CLASS_A);
+                        }
+                        else
+                        {
+                            errorStatus = LORAMAC_HANDLER_ERROR;
+                        }
+                    }
+                }
+                break;
+            case CLASS_B:
+                {
+                    if (currentClass != CLASS_A)
+                    {
+                        errorStatus = LORAMAC_HANDLER_ERROR;
+                    }
+                    // Beacon must first be acquired
+                    errorStatus = LmHandlerDeviceTimeReq();
+                    IsClassBSwitchPending = true;
+                }
+                break;
+            case CLASS_C:
+                {
+                    if (currentClass != CLASS_A)
+                    {
+                        errorStatus = LORAMAC_HANDLER_ERROR;
+                    }
                     // Switch is instantaneous
-                    LmHandlerCallbacks->OnClassChange(CLASS_A);
+                    mibReq.Param.Class = CLASS_C;
+                    if (LoRaMacMibSetRequestConfirm(&mibReq) == LORAMAC_STATUS_OK)
+                    {
+                        LmHandlerCallbacks->OnClassChange(CLASS_C);
+                    }
+                    else
+                    {
+                        errorStatus = LORAMAC_HANDLER_ERROR;
+                    }
                 }
-                else
-                {
-                    errorStatus = LORAMAC_HANDLER_ERROR;
-                }
-            }
-        }
-        break;
-        case CLASS_B:
-        {
-            if (currentClass != CLASS_A)
-            {
-                errorStatus = LORAMAC_HANDLER_ERROR;
-            }
-            // Beacon must first be acquired
-            errorStatus = LmHandlerDeviceTimeReq();
-            IsClassBSwitchPending = true;
-        }
-        break;
-        case CLASS_C:
-        {
-            if (currentClass != CLASS_A)
-            {
-                errorStatus = LORAMAC_HANDLER_ERROR;
-            }
-            // Switch is instantaneous
-            mibReq.Param.Class = CLASS_C;
-            if (LoRaMacMibSetRequestConfirm(&mibReq) == LORAMAC_STATUS_OK)
-            {
-                LmHandlerCallbacks->OnClassChange(CLASS_C);
-            }
-            else
-            {
-                errorStatus = LORAMAC_HANDLER_ERROR;
-            }
-        }
-        break;
-        default:
-            break;
+                break;
+            default:
+                break;
         }
     }
     return errorStatus;
@@ -700,7 +700,7 @@ LmHandlerErrorStatus_t LmHandlerSetSystemMaxRxError(uint32_t maxErrorInMs)
  *=============================================================================
  */
 
-static void McpsConfirm(McpsConfirm_t *mcpsConfirm)
+static void McpsConfirm(McpsConfirm_t* mcpsConfirm)
 {
     TxParams.IsMcpsConfirm = 1;
     TxParams.Status = mcpsConfirm->Status;
@@ -715,7 +715,7 @@ static void McpsConfirm(McpsConfirm_t *mcpsConfirm)
     LmHandlerPackagesNotify(PACKAGE_MCPS_CONFIRM, mcpsConfirm);
 }
 
-static void McpsIndication(McpsIndication_t *mcpsIndication)
+static void McpsIndication(McpsIndication_t* mcpsIndication)
 {
     LmHandlerAppData_t appData;
 
@@ -760,7 +760,7 @@ static void McpsIndication(McpsIndication_t *mcpsIndication)
     }
 }
 
-static void MlmeConfirm(MlmeConfirm_t *mlmeConfirm)
+static void MlmeConfirm(MlmeConfirm_t* mlmeConfirm)
 {
     TxParams.IsMcpsConfirm = 0;
     TxParams.Status = mlmeConfirm->Status;
@@ -770,84 +770,84 @@ static void MlmeConfirm(MlmeConfirm_t *mlmeConfirm)
 
     switch (mlmeConfirm->MlmeRequest)
     {
-    case MLME_JOIN:
-    {
-        MibRequestConfirm_t mibReq;
-        mibReq.Type = MIB_DEV_ADDR;
-        LoRaMacMibGetRequestConfirm(&mibReq);
-        JoinParams.CommissioningParams->DevAddr = mibReq.Param.DevAddr;
-        JoinParams.Datarate = LmHandlerGetCurrentDatarate();
+        case MLME_JOIN:
+            {
+                MibRequestConfirm_t mibReq;
+                mibReq.Type = MIB_DEV_ADDR;
+                LoRaMacMibGetRequestConfirm(&mibReq);
+                JoinParams.CommissioningParams->DevAddr = mibReq.Param.DevAddr;
+                JoinParams.Datarate = LmHandlerGetCurrentDatarate();
 
-        if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
-        {
-            // Status is OK, node has joined the network
-            JoinParams.Status = LORAMAC_HANDLER_SUCCESS;
-        }
-        else
-        {
-            // Join was not successful. Try to join again
-            JoinParams.Status = LORAMAC_HANDLER_ERROR;
-        }
-        // Notify upper layer
-        LmHandlerCallbacks->OnJoinRequest(&JoinParams);
-    }
-    break;
-    case MLME_LINK_CHECK:
-    {
-        // Check DemodMargin
-        // Check NbGateways
-    }
-    break;
-    case MLME_DEVICE_TIME:
-    {
-        if (IsClassBSwitchPending == true)
-        {
-            LmHandlerBeaconReq();
-        }
-    }
-    break;
-    case MLME_BEACON_ACQUISITION:
-    {
-        if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
-        {
-            // Beacon has been acquired
-            // Request server for ping slot
-            LmHandlerPingSlotReq(LmHandlerParams->PingSlotPeriodicity);
-        }
-        else
-        {
-            // Beacon not acquired
-            // Request Device Time again.
-            LmHandlerDeviceTimeReq();
-        }
-    }
-    break;
-    case MLME_PING_SLOT_INFO:
-    {
-        if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
-        {
-            MibRequestConfirm_t mibReq;
+                if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
+                {
+                    // Status is OK, node has joined the network
+                    JoinParams.Status = LORAMAC_HANDLER_SUCCESS;
+                }
+                else
+                {
+                    // Join was not successful. Try to join again
+                    JoinParams.Status = LORAMAC_HANDLER_ERROR;
+                }
+                // Notify upper layer
+                LmHandlerCallbacks->OnJoinRequest(&JoinParams);
+            }
+            break;
+        case MLME_LINK_CHECK:
+            {
+                // Check DemodMargin
+                // Check NbGateways
+            }
+            break;
+        case MLME_DEVICE_TIME:
+            {
+                if (IsClassBSwitchPending == true)
+                {
+                    LmHandlerBeaconReq();
+                }
+            }
+            break;
+        case MLME_BEACON_ACQUISITION:
+            {
+                if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
+                {
+                    // Beacon has been acquired
+                    // Request server for ping slot
+                    LmHandlerPingSlotReq(LmHandlerParams->PingSlotPeriodicity);
+                }
+                else
+                {
+                    // Beacon not acquired
+                    // Request Device Time again.
+                    LmHandlerDeviceTimeReq();
+                }
+            }
+            break;
+        case MLME_PING_SLOT_INFO:
+            {
+                if (mlmeConfirm->Status == LORAMAC_EVENT_INFO_STATUS_OK)
+                {
+                    MibRequestConfirm_t mibReq;
 
-            // Class B is now activated
-            mibReq.Type = MIB_DEVICE_CLASS;
-            mibReq.Param.Class = CLASS_B;
-            LoRaMacMibSetRequestConfirm(&mibReq);
-            // Notify upper layer
-            LmHandlerCallbacks->OnClassChange(CLASS_B);
-            IsClassBSwitchPending = false;
-        }
-        else
-        {
-            LmHandlerPingSlotReq(LmHandlerParams->PingSlotPeriodicity);
-        }
-    }
-    break;
-    default:
-        break;
+                    // Class B is now activated
+                    mibReq.Type = MIB_DEVICE_CLASS;
+                    mibReq.Param.Class = CLASS_B;
+                    LoRaMacMibSetRequestConfirm(&mibReq);
+                    // Notify upper layer
+                    LmHandlerCallbacks->OnClassChange(CLASS_B);
+                    IsClassBSwitchPending = false;
+                }
+                else
+                {
+                    LmHandlerPingSlotReq(LmHandlerParams->PingSlotPeriodicity);
+                }
+            }
+            break;
+        default:
+            break;
     }
 }
 
-static void MlmeIndication(MlmeIndication_t *mlmeIndication)
+static void MlmeIndication(MlmeIndication_t* mlmeIndication)
 {
     RxParams.IsMcpsIndication = 0;
     RxParams.Status = mlmeIndication->Status;
@@ -861,51 +861,51 @@ static void MlmeIndication(MlmeIndication_t *mlmeIndication)
 
     switch (mlmeIndication->MlmeIndication)
     {
-    case MLME_SCHEDULE_UPLINK:
-    {
-        // The MAC layer signals that we shall provide an uplink as soon as possible
-        IsUplinkTxPending = true;
-    }
-    break;
-    case MLME_BEACON_LOST:
-    {
-        MibRequestConfirm_t mibReq;
-        // Switch to class A again
-        mibReq.Type = MIB_DEVICE_CLASS;
-        mibReq.Param.Class = CLASS_A;
-        LoRaMacMibSetRequestConfirm(&mibReq);
+        case MLME_SCHEDULE_UPLINK:
+            {
+                // The MAC layer signals that we shall provide an uplink as soon as possible
+                IsUplinkTxPending = true;
+            }
+            break;
+        case MLME_BEACON_LOST:
+            {
+                MibRequestConfirm_t mibReq;
+                // Switch to class A again
+                mibReq.Type = MIB_DEVICE_CLASS;
+                mibReq.Param.Class = CLASS_A;
+                LoRaMacMibSetRequestConfirm(&mibReq);
 
-        BeaconParams.State = LORAMAC_HANDLER_BEACON_LOST;
-        BeaconParams.Info.Time.Seconds = 0;
-        BeaconParams.Info.GwSpecific.InfoDesc = 0;
-        memset1(BeaconParams.Info.GwSpecific.Info, 0, 6);
+                BeaconParams.State = LORAMAC_HANDLER_BEACON_LOST;
+                BeaconParams.Info.Time.Seconds = 0;
+                BeaconParams.Info.GwSpecific.InfoDesc = 0;
+                memset1(BeaconParams.Info.GwSpecific.Info, 0, 6);
 
-        LmHandlerCallbacks->OnClassChange(CLASS_A);
-        LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
+                LmHandlerCallbacks->OnClassChange(CLASS_A);
+                LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
 
-        LmHandlerDeviceTimeReq();
-    }
-    break;
-    case MLME_BEACON:
-    {
-        if (mlmeIndication->Status == LORAMAC_EVENT_INFO_STATUS_BEACON_LOCKED)
-        {
-            BeaconParams.State = LORAMAC_HANDLER_BEACON_RX;
-            BeaconParams.Info = mlmeIndication->BeaconInfo;
+                LmHandlerDeviceTimeReq();
+            }
+            break;
+        case MLME_BEACON:
+            {
+                if (mlmeIndication->Status == LORAMAC_EVENT_INFO_STATUS_BEACON_LOCKED)
+                {
+                    BeaconParams.State = LORAMAC_HANDLER_BEACON_RX;
+                    BeaconParams.Info = mlmeIndication->BeaconInfo;
 
-            LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
-        }
-        else
-        {
-            BeaconParams.State = LORAMAC_HANDLER_BEACON_NRX;
-            BeaconParams.Info = mlmeIndication->BeaconInfo;
+                    LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
+                }
+                else
+                {
+                    BeaconParams.State = LORAMAC_HANDLER_BEACON_NRX;
+                    BeaconParams.Info = mlmeIndication->BeaconInfo;
 
-            LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
-        }
-        break;
-    }
-    default:
-        break;
+                    LmHandlerCallbacks->OnBeaconStatusChange(&BeaconParams);
+                }
+                break;
+            }
+        default:
+            break;
     }
 }
 
@@ -915,31 +915,31 @@ static void MlmeIndication(MlmeIndication_t *mlmeIndication)
  *=============================================================================
  */
 
-LmHandlerErrorStatus_t LmHandlerPackageRegister(uint8_t id, void *params)
+LmHandlerErrorStatus_t LmHandlerPackageRegister(uint8_t id, void* params)
 {
-    LmhPackage_t *package = NULL;
+    LmhPackage_t* package = NULL;
     switch (id)
     {
-    case PACKAGE_ID_COMPLIANCE:
-    {
-        package = LmphCompliancePackageFactory();
-        break;
-    }
-    case PACKAGE_ID_CLOCK_SYNC:
-    {
-        package = LmphClockSyncPackageFactory();
-        break;
-    }
-    case PACKAGE_ID_REMOTE_MCAST_SETUP:
-    {
-        package = LmhpRemoteMcastSetupPackageFactory();
-        break;
-    }
-    case PACKAGE_ID_FRAGMENTATION:
-    {
-        package = LmhpFragmentationPackageFactory();
-        break;
-    }
+        case PACKAGE_ID_COMPLIANCE:
+            {
+                package = LmphCompliancePackageFactory();
+                break;
+            }
+        case PACKAGE_ID_CLOCK_SYNC:
+            {
+                package = LmphClockSyncPackageFactory();
+                break;
+            }
+        case PACKAGE_ID_REMOTE_MCAST_SETUP:
+            {
+                package = LmhpRemoteMcastSetupPackageFactory();
+                break;
+            }
+        case PACKAGE_ID_FRAGMENTATION:
+            {
+                package = LmhpFragmentationPackageFactory();
+                break;
+            }
     }
     if (package != NULL)
     {
@@ -971,7 +971,7 @@ bool LmHandlerPackageIsInitialized(uint8_t id)
     }
 }
 
-static void LmHandlerPackagesNotify(PackageNotifyTypes_t notifyType, void *params)
+static void LmHandlerPackagesNotify(PackageNotifyTypes_t notifyType, void* params)
 {
     for (int8_t i = 0; i < PKG_MAX_NUMBER; i++)
     {
@@ -979,38 +979,38 @@ static void LmHandlerPackagesNotify(PackageNotifyTypes_t notifyType, void *param
         {
             switch (notifyType)
             {
-            case PACKAGE_MCPS_CONFIRM:
-            {
-                if (LmHandlerPackages[i]->OnMcpsConfirmProcess != NULL)
-                {
-                    LmHandlerPackages[i]->OnMcpsConfirmProcess((McpsConfirm_t *)params);
-                }
-                break;
-            }
-            case PACKAGE_MCPS_INDICATION:
-            {
-                if (LmHandlerPackages[i]->OnMcpsIndicationProcess != NULL)
-                {
-                    LmHandlerPackages[i]->OnMcpsIndicationProcess((McpsIndication_t *)params);
-                }
-                break;
-            }
-            case PACKAGE_MLME_CONFIRM:
-            {
-                if (LmHandlerPackages[i]->OnMlmeConfirmProcess != NULL)
-                {
-                    LmHandlerPackages[i]->OnMlmeConfirmProcess((MlmeConfirm_t *)params);
-                }
-                break;
-            }
-            case PACKAGE_MLME_INDICATION:
-            {
-                if (LmHandlerPackages[i]->OnMlmeIndicationProcess != NULL)
-                {
-                    LmHandlerPackages[i]->OnMlmeIndicationProcess(params);
-                }
-                break;
-            }
+                case PACKAGE_MCPS_CONFIRM:
+                    {
+                        if (LmHandlerPackages[i]->OnMcpsConfirmProcess != NULL)
+                        {
+                            LmHandlerPackages[i]->OnMcpsConfirmProcess((McpsConfirm_t*)params);
+                        }
+                        break;
+                    }
+                case PACKAGE_MCPS_INDICATION:
+                    {
+                        if (LmHandlerPackages[i]->OnMcpsIndicationProcess != NULL)
+                        {
+                            LmHandlerPackages[i]->OnMcpsIndicationProcess((McpsIndication_t*)params);
+                        }
+                        break;
+                    }
+                case PACKAGE_MLME_CONFIRM:
+                    {
+                        if (LmHandlerPackages[i]->OnMlmeConfirmProcess != NULL)
+                        {
+                            LmHandlerPackages[i]->OnMlmeConfirmProcess((MlmeConfirm_t*)params);
+                        }
+                        break;
+                    }
+                case PACKAGE_MLME_INDICATION:
+                    {
+                        if (LmHandlerPackages[i]->OnMlmeIndicationProcess != NULL)
+                        {
+                            LmHandlerPackages[i]->OnMlmeIndicationProcess(params);
+                        }
+                        break;
+                    }
             }
         }
     }
