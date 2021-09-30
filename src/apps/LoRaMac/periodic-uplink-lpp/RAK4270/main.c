@@ -273,9 +273,7 @@ int main(void)
 
     const Version_t appVersion = { .Value = FIRMWARE_VERSION };
     const Version_t gitHubVersion = { .Value = GITHUB_VERSION };
-    DisplayAppInfo("periodic-uplink-lpp",
-        &appVersion,
-        &gitHubVersion);
+    DisplayAppInfo("periodic-uplink-lpp", &appVersion, &gitHubVersion);
 
     if (LmHandlerInit(&LmHandlerCallbacks, &LmHandlerParams) != LORAMAC_HANDLER_SUCCESS)
     {
