@@ -30,6 +30,8 @@
  *
  * \author    Johannes Bruder ( STACKFORCE )
  * 
+ * \author    Facundo Barrionuevo (IOF)
+ * 
  * \author    Jhonattan Camargo (IOF)
  */
 #ifndef __BOARD_CONFIG_H__

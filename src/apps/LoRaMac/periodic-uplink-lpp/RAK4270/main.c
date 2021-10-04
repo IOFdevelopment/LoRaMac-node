@@ -19,7 +19,7 @@
  * \author    Miguel Luis ( Semtech )
  */
 
- /*! \file periodic-uplink/NucleoL073/main.c */
+/*! \file periodic-uplink/NucleoL073/main.c */
 
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +39,8 @@
 #include "CayenneLpp.h"
 #include "LmHandlerMsgDisplay.h"
 
+#include "secure-element.h"
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -54,54 +56,54 @@
 #define LORAWAN_DEFAULT_CLASS CLASS_A
 #endif
 
- /*!
+/*!
  * Defines the application data transmission duty cycle. 5s, value in [ms].
  */
 #define APP_TX_DUTYCYCLE 5000
 
- /*!
+/*!
  * Defines a random delay for application data transmission duty cycle. 1s,
  * value in [ms].
  */
 #define APP_TX_DUTYCYCLE_RND 1000
 
- /*!
+/*!
  * LoRaWAN Adaptive Data Rate
  *
  * \remark Please note that when ADR is enabled the end-device should be static
  */
 #define LORAWAN_ADR_STATE LORAMAC_HANDLER_ADR_ON
 
- /*!
+/*!
  * Default datarate
  *
  * \remark Please note that LORAWAN_DEFAULT_DATARATE is used only when ADR is disabled
  */
 #define LORAWAN_DEFAULT_DATARATE DR_0
 
- /*!
+/*!
  * LoRaWAN confirmed messages
  */
 #define LORAWAN_DEFAULT_CONFIRMED_MSG_STATE LORAMAC_HANDLER_UNCONFIRMED_MSG
 
- /*!
+/*!
  * User application data buffer size
  */
 #define LORAWAN_APP_DATA_BUFFER_MAX_SIZE 242
 
- /*!
+/*!
  * LoRaWAN ETSI duty cycle control enable/disable
  *
  * \remark Please note that ETSI mandates duty cycled transmissions. Use only for test purposes
  */
 #define LORAWAN_DUTYCYCLE_ON false
 
- /*!
+/*!
  * LoRaWAN application port
  * @remark The allowed port range is from 1 up to 223. Other values are reserved.
  */
 #define LORAWAN_APP_PORT 2
-    typedef enum
+typedef enum
 {
     LORAMAC_HANDLER_TX_ON_TIMER,
     LORAMAC_HANDLER_TX_ON_EVENT,
@@ -116,10 +118,10 @@ static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
  * User application data structure
  */
 static LmHandlerAppData_t AppData =
-{
-    .Buffer = AppDataBuffer,
-    .BufferSize = 0,
-    .Port = 0,
+    {
+        .Buffer = AppDataBuffer,
+        .BufferSize = 0,
+        .Port = 0,
 };
 
 /*!
@@ -149,14 +151,14 @@ static TimerEvent_t LedBeaconTimer;
 
 static void OnMacProcessNotify(void);
 static void OnNvmDataChange(LmHandlerNvmContextStates_t state, uint16_t size);
-static void OnNetworkParametersChange(CommissioningParams_t* params);
-static void OnMacMcpsRequest(LoRaMacStatus_t status, McpsReq_t* mcpsReq, TimerTime_t nextTxIn);
-static void OnMacMlmeRequest(LoRaMacStatus_t status, MlmeReq_t* mlmeReq, TimerTime_t nextTxIn);
-static void OnJoinRequest(LmHandlerJoinParams_t* params);
-static void OnTxData(LmHandlerTxParams_t* params);
-static void OnRxData(LmHandlerAppData_t* appData, LmHandlerRxParams_t* params);
+static void OnNetworkParametersChange(CommissioningParams_t *params);
+static void OnMacMcpsRequest(LoRaMacStatus_t status, McpsReq_t *mcpsReq, TimerTime_t nextTxIn);
+static void OnMacMlmeRequest(LoRaMacStatus_t status, MlmeReq_t *mlmeReq, TimerTime_t nextTxIn);
+static void OnJoinRequest(LmHandlerJoinParams_t *params);
+static void OnTxData(LmHandlerTxParams_t *params);
+static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params);
 static void OnClassChange(DeviceClass_t deviceClass);
-static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t* params);
+static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params);
 
 static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection);
 
@@ -171,60 +173,60 @@ static void OnPingSlotPeriodicityChanged(uint8_t pingSlotPeriodicity);
 /*!
  * Function executed on TxTimer event
  */
-static void OnTxTimerEvent(void* context);
+static void OnTxTimerEvent(void *context);
 
 /*!
  * Function executed on Led 1 Timeout event
  */
-static void OnLed1TimerEvent(void* context);
+static void OnLed1TimerEvent(void *context);
 
 /*!
  * Function executed on Led 2 Timeout event
  */
-static void OnLed2TimerEvent(void* context);
+static void OnLed2TimerEvent(void *context);
 
 /*!
  * \brief Function executed on Beacon timer Timeout event
  */
-static void OnLedBeaconTimerEvent(void* context);
+static void OnLedBeaconTimerEvent(void *context);
 
 static LmHandlerCallbacks_t LmHandlerCallbacks =
-{
-    .GetBatteryLevel = BoardGetBatteryLevel,
-    .GetTemperature = NULL,
-    .GetRandomSeed = BoardGetRandomSeed,
-    .OnMacProcess = OnMacProcessNotify,
-    .OnNvmDataChange = OnNvmDataChange,
-    .OnNetworkParametersChange = OnNetworkParametersChange,
-    .OnMacMcpsRequest = OnMacMcpsRequest,
-    .OnMacMlmeRequest = OnMacMlmeRequest,
-    .OnJoinRequest = OnJoinRequest,
-    .OnTxData = OnTxData,
-    .OnRxData = OnRxData,
-    .OnClassChange = OnClassChange,
-    .OnBeaconStatusChange = OnBeaconStatusChange,
-    .OnSysTimeUpdate = OnSysTimeUpdate,
+    {
+        .GetBatteryLevel = BoardGetBatteryLevel,
+        .GetTemperature = NULL,
+        .GetRandomSeed = BoardGetRandomSeed,
+        .OnMacProcess = OnMacProcessNotify,
+        .OnNvmDataChange = OnNvmDataChange,
+        .OnNetworkParametersChange = OnNetworkParametersChange,
+        .OnMacMcpsRequest = OnMacMcpsRequest,
+        .OnMacMlmeRequest = OnMacMlmeRequest,
+        .OnJoinRequest = OnJoinRequest,
+        .OnTxData = OnTxData,
+        .OnRxData = OnRxData,
+        .OnClassChange = OnClassChange,
+        .OnBeaconStatusChange = OnBeaconStatusChange,
+        .OnSysTimeUpdate = OnSysTimeUpdate,
 };
 
 static LmHandlerParams_t LmHandlerParams =
-{
-    .Region = ACTIVE_REGION,
-    .AdrEnable = LORAWAN_ADR_STATE,
-    .IsTxConfirmed = LORAWAN_DEFAULT_CONFIRMED_MSG_STATE,
-    .TxDatarate = LORAWAN_DEFAULT_DATARATE,
-    .PublicNetworkEnable = LORAWAN_PUBLIC_NETWORK,
-    .DutyCycleEnabled = LORAWAN_DUTYCYCLE_ON,
-    .DataBufferMaxSize = LORAWAN_APP_DATA_BUFFER_MAX_SIZE,
-    .DataBuffer = AppDataBuffer,
-    .PingSlotPeriodicity = REGION_COMMON_DEFAULT_PING_SLOT_PERIODICITY,
+    {
+        .Region = ACTIVE_REGION,
+        .AdrEnable = LORAWAN_ADR_STATE,
+        .IsTxConfirmed = LORAWAN_DEFAULT_CONFIRMED_MSG_STATE,
+        .TxDatarate = LORAWAN_DEFAULT_DATARATE,
+        .PublicNetworkEnable = LORAWAN_PUBLIC_NETWORK,
+        .DutyCycleEnabled = LORAWAN_DUTYCYCLE_ON,
+        .DataBufferMaxSize = LORAWAN_APP_DATA_BUFFER_MAX_SIZE,
+        .DataBuffer = AppDataBuffer,
+        .PingSlotPeriodicity = REGION_COMMON_DEFAULT_PING_SLOT_PERIODICITY,
 };
 
 static LmhpComplianceParams_t LmhpComplianceParams =
-{
-    .FwVersion.Value = FIRMWARE_VERSION,
-    .OnTxPeriodicityChanged = OnTxPeriodicityChanged,
-    .OnTxFrameCtrlChanged = OnTxFrameCtrlChanged,
-    .OnPingSlotPeriodicityChanged = OnPingSlotPeriodicityChanged,
+    {
+        .FwVersion.Value = FIRMWARE_VERSION,
+        .OnTxPeriodicityChanged = OnTxPeriodicityChanged,
+        .OnTxFrameCtrlChanged = OnTxFrameCtrlChanged,
+        .OnPingSlotPeriodicityChanged = OnPingSlotPeriodicityChanged,
 };
 
 /*!
@@ -237,6 +239,13 @@ static volatile uint8_t IsMacProcessPending = 0;
 static volatile uint8_t IsTxFramePending = 0;
 
 static volatile uint32_t TxPeriodicity = 0;
+
+/*
+ *LoRa Parameters
+ */
+extern CommissioningParams_t *CommissioningParams;
+extern MibRequestConfirm_t *mibReq;
+extern MibParam_t Param;
 
 /*!
  * LED GPIO pins objects
@@ -257,7 +266,7 @@ int main(void)
     BoardInitMcu();
     BoardInitPeriph();
 
-    const char* buff = "Init Done Succesfully\r\n";
+    const char *buff = "Init Done Succesfully\r\n";
 
     TimerInit(&Led1Timer, OnLed1TimerEvent);
     TimerSetValue(&Led1Timer, 25);
@@ -271,8 +280,8 @@ int main(void)
     // Initialize transmission periodicity variable
     TxPeriodicity = APP_TX_DUTYCYCLE + randr(-APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND);
 
-    const Version_t appVersion = { .Value = FIRMWARE_VERSION };
-    const Version_t gitHubVersion = { .Value = GITHUB_VERSION };
+    const Version_t appVersion = {.Value = FIRMWARE_VERSION};
+    const Version_t gitHubVersion = {.Value = GITHUB_VERSION};
     DisplayAppInfo("periodic-uplink-lpp", &appVersion, &gitHubVersion);
 
     if (LmHandlerInit(&LmHandlerCallbacks, &LmHandlerParams) != LORAMAC_HANDLER_SUCCESS)
@@ -287,7 +296,23 @@ int main(void)
     }
     else
     {
-        printf("LoRaMac properly initialized\n");
+        printf("LoRaMac properly initialized\r\n");
+        uint8_t *devEui = (uint8_t *)"60C5A8FFFE78EF15";
+        if (SecureElementSetDevEui(devEui) == SECURE_ELEMENT_SUCCESS)
+        {
+            printf("DevEUI seated OK\r\n");
+        }
+        else
+        {
+            printf("DevEUI seated NOT OK\r\n");
+        }
+        devEui = SecureElementGetDevEui();
+        printf("DevEUI (Secure Element): ");
+        for (int i = 0; i < 16; i++)
+        {
+            printf("%u", devEui[i]);
+        }
+        printf("\r\n");
     }
 
     // Set system maximum tolerated rx error in milliseconds
@@ -296,18 +321,14 @@ int main(void)
     // The LoRa-Alliance Compliance protocol package should always be
     // initialized and activated.
     // FIXME: no avanza de acá si se descomenta
-    // LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
+    LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
+    printf("Pasó el loop\r\n");
 
     LmHandlerJoin();
 
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
-    // while (1)
-    // {
-    //     GpioToggle(&Led1);
-    //     UartPutBuffer(&Uart2, (uint8_t*)buff, strlen(buff));
-    //     DelayMs(1000);
-    // }
+    //DisplayNetworkParametersUpdate(CommissioningParams);
 
     while (1)
     {
@@ -315,9 +336,11 @@ int main(void)
         // CliProcess(&Uart2);
 
         // Processes the LoRaMac events
-        // LmHandlerProcess();
+        LmHandlerProcess();
         GpioToggle(&Led1);
-        DelayMs(100);
+        //UartPutBuffer(&Uart2, (uint8_t*)buff, strlen(buff));
+
+        DelayMs(10000);
 
         // Process application uplinks management
         // UplinkProcess();
@@ -347,22 +370,22 @@ static void OnNvmDataChange(LmHandlerNvmContextStates_t state, uint16_t size)
     DisplayNvmDataChange(state, size);
 }
 
-static void OnNetworkParametersChange(CommissioningParams_t* params)
+static void OnNetworkParametersChange(CommissioningParams_t *params)
 {
     DisplayNetworkParametersUpdate(params);
 }
 
-static void OnMacMcpsRequest(LoRaMacStatus_t status, McpsReq_t* mcpsReq, TimerTime_t nextTxIn)
+static void OnMacMcpsRequest(LoRaMacStatus_t status, McpsReq_t *mcpsReq, TimerTime_t nextTxIn)
 {
     DisplayMacMcpsRequestUpdate(status, mcpsReq, nextTxIn);
 }
 
-static void OnMacMlmeRequest(LoRaMacStatus_t status, MlmeReq_t* mlmeReq, TimerTime_t nextTxIn)
+static void OnMacMlmeRequest(LoRaMacStatus_t status, MlmeReq_t *mlmeReq, TimerTime_t nextTxIn)
 {
     DisplayMacMlmeRequestUpdate(status, mlmeReq, nextTxIn);
 }
 
-static void OnJoinRequest(LmHandlerJoinParams_t* params)
+static void OnJoinRequest(LmHandlerJoinParams_t *params)
 {
     DisplayJoinRequestUpdate(params);
     if (params->Status == LORAMAC_HANDLER_ERROR)
@@ -375,25 +398,25 @@ static void OnJoinRequest(LmHandlerJoinParams_t* params)
     }
 }
 
-static void OnTxData(LmHandlerTxParams_t* params)
+static void OnTxData(LmHandlerTxParams_t *params)
 {
     DisplayTxUpdate(params);
 }
 
-static void OnRxData(LmHandlerAppData_t* appData, LmHandlerRxParams_t* params)
+static void OnRxData(LmHandlerAppData_t *appData, LmHandlerRxParams_t *params)
 {
     DisplayRxUpdate(appData, params);
 
     switch (appData->Port)
     {
-        case 1: // The application LED can be controlled on port 1 or 2
-        case LORAWAN_APP_PORT:
-            {
-                AppLedStateOn = appData->Buffer[0] & 0x01;
-                break;
-            }
-        default:
-            break;
+    case 1: // The application LED can be controlled on port 1 or 2
+    case LORAWAN_APP_PORT:
+    {
+        AppLedStateOn = appData->Buffer[0] & 0x01;
+        break;
+    }
+    default:
+        break;
     }
 
     // Switch LED 2 ON for each received downlink
@@ -407,33 +430,33 @@ static void OnClassChange(DeviceClass_t deviceClass)
 
     // Inform the server as soon as possible that the end-device has switched to ClassB
     LmHandlerAppData_t appData =
-    {
-        .Buffer = NULL,
-        .BufferSize = 0,
-        .Port = 0,
-    };
+        {
+            .Buffer = NULL,
+            .BufferSize = 0,
+            .Port = 0,
+        };
     LmHandlerSend(&appData, LORAMAC_HANDLER_UNCONFIRMED_MSG);
 }
 
-static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t* params)
+static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params)
 {
     switch (params->State)
     {
-        case LORAMAC_HANDLER_BEACON_RX:
-            {
-                TimerStart(&LedBeaconTimer);
-                break;
-            }
-        case LORAMAC_HANDLER_BEACON_LOST:
-        case LORAMAC_HANDLER_BEACON_NRX:
-            {
-                TimerStop(&LedBeaconTimer);
-                break;
-            }
-        default:
-            {
-                break;
-            }
+    case LORAMAC_HANDLER_BEACON_RX:
+    {
+        TimerStart(&LedBeaconTimer);
+        break;
+    }
+    case LORAMAC_HANDLER_BEACON_LOST:
+    case LORAMAC_HANDLER_BEACON_NRX:
+    {
+        TimerStop(&LedBeaconTimer);
+        break;
+    }
+    default:
+    {
+        break;
+    }
     }
 
     DisplayBeaconUpdate(params);
@@ -476,20 +499,20 @@ static void StartTxProcess(LmHandlerTxEvents_t txEvent)
 {
     switch (txEvent)
     {
-        default:
-            // Intentional fall through
-        case LORAMAC_HANDLER_TX_ON_TIMER:
-            {
-                // Schedule 1st packet transmission
-                TimerInit(&TxTimer, OnTxTimerEvent);
-                TimerSetValue(&TxTimer, TxPeriodicity);
-                OnTxTimerEvent(NULL);
-            }
-            break;
-        case LORAMAC_HANDLER_TX_ON_EVENT:
-            {
-            }
-            break;
+    default:
+        // Intentional fall through
+    case LORAMAC_HANDLER_TX_ON_TIMER:
+    {
+        // Schedule 1st packet transmission
+        TimerInit(&TxTimer, OnTxTimerEvent);
+        TimerSetValue(&TxTimer, TxPeriodicity);
+        OnTxTimerEvent(NULL);
+    }
+    break;
+    case LORAMAC_HANDLER_TX_ON_EVENT:
+    {
+    }
+    break;
     }
 }
 
@@ -534,7 +557,7 @@ static void OnPingSlotPeriodicityChanged(uint8_t pingSlotPeriodicity)
 /*!
  * Function executed on TxTimer event
  */
-static void OnTxTimerEvent(void* context)
+static void OnTxTimerEvent(void *context)
 {
     TimerStop(&TxTimer);
 
@@ -548,7 +571,7 @@ static void OnTxTimerEvent(void* context)
 /*!
  * Function executed on Led 1 Timeout event
  */
-static void OnLed1TimerEvent(void* context)
+static void OnLed1TimerEvent(void *context)
 {
     TimerStop(&Led1Timer);
     // Switch LED 1 OFF
@@ -558,7 +581,7 @@ static void OnLed1TimerEvent(void* context)
 /*!
  * Function executed on Led 2 Timeout event
  */
-static void OnLed2TimerEvent(void* context)
+static void OnLed2TimerEvent(void *context)
 {
     TimerStop(&Led2Timer);
     // Switch LED 2 OFF
@@ -568,7 +591,7 @@ static void OnLed2TimerEvent(void* context)
 /*!
  * \brief Function executed on Beacon timer Timeout event
  */
-static void OnLedBeaconTimerEvent(void* context)
+static void OnLedBeaconTimerEvent(void *context)
 {
     GpioWrite(&Led2, 1);
     TimerStart(&Led2Timer);
