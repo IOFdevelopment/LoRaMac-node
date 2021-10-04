@@ -300,11 +300,11 @@ int main(void)
         uint8_t *devEui = (uint8_t *)"60C5A8FFFE78EF15";
         if (SecureElementSetDevEui(devEui) == SECURE_ELEMENT_SUCCESS)
         {
-            printf("DevEUI seated OK\r\n");
+            printf("DevEUI seted OK\r\n");
         }
         else
         {
-            printf("DevEUI seated NOT OK\r\n");
+            printf("DevEUI seted NOT OK\r\n");
         }
         devEui = SecureElementGetDevEui();
         printf("DevEUI (Secure Element): ");

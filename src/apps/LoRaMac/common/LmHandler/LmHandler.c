@@ -385,6 +385,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     }
 
     //Change ADR to true
+    //TODO: Is this way to change params correct?
     mibReq.Type = MIB_ADR;
     mibReq.Param.AdrEnable = LmHandlerParams->AdrEnable;  
     LoRaMacMibSetRequestConfirm(&mibReq);                 //Validate the parameter change
