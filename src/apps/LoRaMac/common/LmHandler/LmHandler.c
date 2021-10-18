@@ -49,7 +49,7 @@
 
 static CommissioningParams_t CommissioningParams =
     {
-        .IsOtaaActivation = OVER_THE_AIR_ACTIVATION,
+        .IsOtaaActivation = OVER_THE_AIR_ACTIVATION, //Here to change the Join Type 0 -> ABP, 1 -> OTAA
         .DevEui = {0},  // Automatically filed from secure-element
         .JoinEui = {0}, // Automatically filed from secure-element
         .SePin = {0},   // Automatically filed from secure-element
@@ -298,18 +298,12 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
 
     // Read secure-element DEV_EUI, JOI_EUI and SE_PIN values.
 
-    //Changing DevEui
-    // uint8_t devEUI[16] = "60C5A8FFFE78EF15";
-    // mibReq.Type = MIB_DEV_EUI;
-    // mibReq.Param.DevEui = devEUI;
-    // LoRaMacMibSetRequestConfirm(&mibReq);
-
     mibReq.Type = MIB_DEV_EUI;
     LoRaMacMibGetRequestConfirm(&mibReq);
     memcpy1(CommissioningParams.DevEui, mibReq.Param.DevEui, 8);
     ////////////////////////////////////////////////////////////
     printf("\r\nDevEUI (CommissionParms): ");
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 8; i++)
     {
         printf("%.2x", CommissioningParams.DevEui[i]);
     }
@@ -326,6 +320,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     mibReq.Type = MIB_DEV_ADDR;
     LoRaMacMibGetRequestConfirm(&mibReq);
     printf("\r\nDevAddr: %u\r\n",mibReq.Param.DevAddr);
+    
     ////////////////////////////////////////////////////////////
 
     mibReq.Type = MIB_JOIN_EUI;
@@ -352,14 +347,29 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     printf("\r\n");
     ////////////////////////////////////////////////////////////
 
+    // uint8_t *appKey = '00112233445566778899AABBCCDDEEFF';
+    // mibReq.Type = MIB_APP_KEY;
+    // mibReq.Param.AdrEnable = appKey;
+    // LoRaMacMibSetRequestConfirm(&mibReq);  //Validate the parameter change
+
     mibReq.Type = MIB_APP_KEY;
     LoRaMacMibGetRequestConfirm(&mibReq);
-    printf("\r\nAppKey: %u\r\n", mibReq.Param.AppKey);
+    printf("\r\nAppKey: ");
+    for (int i = 0; i < 16; i++)
+    {
+        printf("%.2x", mibReq.Param.AppKey[i]);
+    }
+    printf("\r\n");
     ////////////////////////////////////////////////////////////
 
     mibReq.Type = MIB_NWK_KEY;
     LoRaMacMibGetRequestConfirm(&mibReq);
-    printf("\r\nNetwork Key: %u\r\n", mibReq.Param.NwkKey);
+    printf("\r\nNetwork Key: ");
+    for (int i = 0; i < 16; i++)
+    {
+        printf("%.2x", mibReq.Param.NwkKey[i]);
+    }
+    printf("\r\n");
     ////////////////////////////////////////////////////////////
 
     mibReq.Type = MIB_PUBLIC_NETWORK;
@@ -401,6 +411,11 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     }
     ////////////////////////////////////////////////////////////
 
+    //Change class A or C
+    mibReq.Type = MIB_DEVICE_CLASS;
+    mibReq.Param.Class = CLASS_A; //Seting class A
+    LoRaMacMibSetRequestConfirm(&mibReq);                 //Validate the parameter change
+    //Now GET the parameter
     mibReq.Type = MIB_DEVICE_CLASS;
     LoRaMacMibGetRequestConfirm(&mibReq);
     if (mibReq.Param.Class == CLASS_A)
@@ -416,7 +431,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
         printf("\r\nClass: C\r\n");
     }
 
-    //Changing and show the parameter NETWORK ACTIVATION
+    //Changing and show the parameter NETWORK ACTIVATION TODO: It works??
     mibReq.Type = MIB_NETWORK_ACTIVATION;
     mibReq.Param.NetworkActivation = ACTIVATION_TYPE_OTAA;
     LoRaMacMibSetRequestConfirm(&mibReq);                   //Validate the change
@@ -551,12 +566,14 @@ static void LmHandlerJoinRequest(bool isOtaa)
 
     if (isOtaa == true)
     {
+        printf("Activation type is OTAA\r\n");
         mlmeReq.Req.Join.NetworkActivation = ACTIVATION_TYPE_OTAA;
         // Update commissioning parameters activation type variable.
         CommissioningParams.IsOtaaActivation = true;
     }
     else
     {
+        printf("Activation type is ABP\r\n");
         mlmeReq.Req.Join.NetworkActivation = ACTIVATION_TYPE_ABP;
         // Update commissioning parameters activation type variable.
         CommissioningParams.IsOtaaActivation = false;
@@ -568,6 +585,7 @@ static void LmHandlerJoinRequest(bool isOtaa)
 
 void LmHandlerJoin(void)
 {
+    //This funtion recieve a boolean, if it is true -> OTAA, false -> ABP
     LmHandlerJoinRequest(CommissioningParams.IsOtaaActivation);
 }
 

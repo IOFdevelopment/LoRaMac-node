@@ -297,22 +297,22 @@ int main(void)
     else
     {
         printf("LoRaMac properly initialized\r\n");
-        uint8_t *devEui = (uint8_t *)"60C5A8FFFE78EF15";
-        if (SecureElementSetDevEui(devEui) == SECURE_ELEMENT_SUCCESS)
-        {
-            printf("DevEUI seted OK\r\n");
-        }
-        else
-        {
-            printf("DevEUI seted NOT OK\r\n");
-        }
-        devEui = SecureElementGetDevEui();
-        printf("DevEUI (Secure Element): ");
-        for (int i = 0; i < 16; i++)
-        {
-            printf("%u", devEui[i]);
-        }
-        printf("\r\n");
+        // uint8_t *devEui = (uint8_t *)"60C5A8FFFE78EF15";
+        // if (SecureElementSetDevEui(devEui) == SECURE_ELEMENT_SUCCESS)
+        // {
+        //     printf("DevEUI seted OK\r\n");
+        // }
+        // else
+        // {
+        //     printf("DevEUI seted NOT OK\r\n");
+        // }
+        // devEui = SecureElementGetDevEui();
+        // printf("DevEUI (Secure Element): ");
+        // for (int i = 0; i < 16; i++)
+        // {
+        //     printf("%u", devEui[i]);
+        // }
+        // printf("\r\n");
     }
 
     // Set system maximum tolerated rx error in milliseconds
@@ -325,7 +325,7 @@ int main(void)
     printf("Pasó el loop\r\n");
 
     LmHandlerJoin();
-
+ 
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
     //DisplayNetworkParametersUpdate(CommissioningParams);

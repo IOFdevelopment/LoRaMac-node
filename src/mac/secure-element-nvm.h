@@ -84,7 +84,7 @@ typedef struct sSecureElementNvCtx
     /*!
      * DevEUI storage
      */
-    uint8_t DevEui[SE_EUI_SIZE];
+    uint8_t DevEui[SE_EUI_SIZE];  //TODO: NVM SE
     /*!
      * Join EUI storage
      */

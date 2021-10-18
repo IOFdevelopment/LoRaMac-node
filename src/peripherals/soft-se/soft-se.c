@@ -37,7 +37,8 @@
 #include "se-identity.h"
 #include "soft-se-hal.h"
 
-static SecureElementNvmData_t *SeNvm;
+//TODO: De acá saca los valores de DevEui, JoinEui, etc (antes estaba static -> lo saco para poder cambiar el parametro)
+SecureElementNvmData_t *SeNvm;
 
 /*
  * Local functions
@@ -409,8 +410,15 @@ SecureElementStatus_t SecureElementSetDevEui(uint8_t *devEui)
     return SECURE_ELEMENT_SUCCESS;
 }
 
-uint8_t *SecureElementGetDevEui(void)
+uint8_t *SecureElementGetDevEui(void)  //TODO: Aqui se setea el DEVEUI, lo saca del SE
 {
+    //Reseteo el DEV EUI
+    uint8_t devEui[8] = {0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30};
+
+    for (int j = 0 ; j < 8 ; j++)
+    {
+        SeNvm->DevEui[j] = devEui[j];
+    }
     return SeNvm->DevEui;
 }
 

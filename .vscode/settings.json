@@ -116,6 +116,7 @@
         "firmwareversion.h": "c",
         "se-identity.h": "c",
         "lmhandler.h": "c",
-        "lmhpcompliance.h": "c"
+        "lmhpcompliance.h": "c",
+        "loramactest.h": "c"
     }
 }
