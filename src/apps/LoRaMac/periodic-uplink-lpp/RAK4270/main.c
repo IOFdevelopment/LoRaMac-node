@@ -320,7 +320,6 @@ int main(void)
 
     // The LoRa-Alliance Compliance protocol package should always be
     // initialized and activated.
-    // FIXME: no avanza de acá si se descomenta
     LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
     printf("Pasó el loop\r\n");
 

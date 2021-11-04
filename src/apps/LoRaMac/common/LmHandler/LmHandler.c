@@ -36,6 +36,8 @@
 #include "LmhpClockSync.h"
 #include "LmhpRemoteMcastSetup.h"
 #include "LmhpFragmentation.h"
+#include "delay.h"
+#include "string.h"
 
 #ifndef ACTIVE_REGION
 
@@ -50,9 +52,9 @@
 static CommissioningParams_t CommissioningParams =
     {
         .IsOtaaActivation = OVER_THE_AIR_ACTIVATION, //Here to change the Join Type 0 -> ABP, 1 -> OTAA
-        .DevEui = {0},  // Automatically filed from secure-element
-        .JoinEui = {0}, // Automatically filed from secure-element
-        .SePin = {0},   // Automatically filed from secure-element
+        .DevEui = {0},                               // Automatically filed from secure-element
+        .JoinEui = {0},                              // Automatically filed from secure-element
+        .SePin = {0},                                // Automatically filed from secure-element
         .NetworkId = LORAWAN_NETWORK_ID,
         .DevAddr = LORAWAN_DEVICE_ADDRESS,
 };
@@ -319,8 +321,8 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
 
     mibReq.Type = MIB_DEV_ADDR;
     LoRaMacMibGetRequestConfirm(&mibReq);
-    printf("\r\nDevAddr: %u\r\n",mibReq.Param.DevAddr);
-    
+    printf("\r\nDevAddr: %u\r\n", mibReq.Param.DevAddr);
+
     ////////////////////////////////////////////////////////////
 
     mibReq.Type = MIB_JOIN_EUI;
@@ -379,7 +381,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     //Change ADR to false
     mibReq.Type = MIB_ADR;
     mibReq.Param.AdrEnable = false;
-    LoRaMacMibSetRequestConfirm(&mibReq);  //Validate the parameter change
+    LoRaMacMibSetRequestConfirm(&mibReq); //Validate the parameter change
 
     //Showing the changed parameter
     mibReq.Type = MIB_ADR;
@@ -397,8 +399,8 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     //Change ADR to true
     //TODO: Is this way to change params correct?
     mibReq.Type = MIB_ADR;
-    mibReq.Param.AdrEnable = LmHandlerParams->AdrEnable;  
-    LoRaMacMibSetRequestConfirm(&mibReq);                 //Validate the parameter change
+    mibReq.Param.AdrEnable = LmHandlerParams->AdrEnable;
+    LoRaMacMibSetRequestConfirm(&mibReq); //Validate the parameter change
     ////////////////////////////////////////////////////////////
     //Showing the chnged prmeter
     if (mibReq.Param.AdrEnable)
@@ -413,8 +415,8 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
 
     //Change class A or C
     mibReq.Type = MIB_DEVICE_CLASS;
-    mibReq.Param.Class = CLASS_A; //Seting class A
-    LoRaMacMibSetRequestConfirm(&mibReq);                 //Validate the parameter change
+    mibReq.Param.Class = CLASS_A;         //Seting class A
+    LoRaMacMibSetRequestConfirm(&mibReq); //Validate the parameter change
     //Now GET the parameter
     mibReq.Type = MIB_DEVICE_CLASS;
     LoRaMacMibGetRequestConfirm(&mibReq);
@@ -434,7 +436,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     //Changing and show the parameter NETWORK ACTIVATION TODO: It works??
     mibReq.Type = MIB_NETWORK_ACTIVATION;
     mibReq.Param.NetworkActivation = ACTIVATION_TYPE_OTAA;
-    LoRaMacMibSetRequestConfirm(&mibReq);                   //Validate the change
+    LoRaMacMibSetRequestConfirm(&mibReq); //Validate the change
 
     //Showing
     mibReq.Type = MIB_NETWORK_ACTIVATION;
@@ -537,9 +539,9 @@ void LmHandlerProcess(void)
                 .BufferSize = 0,
                 .Port = 0,
             };
-
         if (LmHandlerSend(&appData, LmHandlerParams->IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
         {
+            printf("Message sent\r\n");
             IsUplinkTxPending = false;
         }
     }
