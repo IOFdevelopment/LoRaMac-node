@@ -41,6 +41,8 @@
 
 #include "secure-element.h"
 
+#include "iofHandler.h"
+
 #ifndef ACTIVE_REGION
 
 #warning "No active region defined, LORAMAC_REGION_EU868 will be used as default."
@@ -266,8 +268,6 @@ int main(void)
     BoardInitMcu();
     BoardInitPeriph();
 
-    const char *buff = "Init Done Succesfully\r\n";
-
     TimerInit(&Led1Timer, OnLed1TimerEvent);
     TimerSetValue(&Led1Timer, 25);
 
@@ -297,22 +297,6 @@ int main(void)
     else
     {
         printf("LoRaMac properly initialized\r\n");
-        // uint8_t *devEui = (uint8_t *)"60C5A8FFFE78EF15";
-        // if (SecureElementSetDevEui(devEui) == SECURE_ELEMENT_SUCCESS)
-        // {
-        //     printf("DevEUI seted OK\r\n");
-        // }
-        // else
-        // {
-        //     printf("DevEUI seted NOT OK\r\n");
-        // }
-        // devEui = SecureElementGetDevEui();
-        // printf("DevEUI (Secure Element): ");
-        // for (int i = 0; i < 16; i++)
-        // {
-        //     printf("%u", devEui[i]);
-        // }
-        // printf("\r\n");
     }
 
     // Set system maximum tolerated rx error in milliseconds
@@ -323,7 +307,13 @@ int main(void)
     LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
     printf("Pasó el loop\r\n");
 
-    LmHandlerJoin();
+    //LmHandlerJoin();
+    uint8_t aTest[] = {'0', '1'} , bTest = 1;
+    iofJoin (aTest, bTest);
+
+    iofGetEUI(aTest, bTest);
+
+    printIOF();
  
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
@@ -339,23 +329,21 @@ int main(void)
         GpioToggle(&Led1);
         //UartPutBuffer(&Uart2, (uint8_t*)buff, strlen(buff));
 
-        DelayMs(10000);
-
         // Process application uplinks management
-        // UplinkProcess();
+        UplinkProcess();
 
-        // CRITICAL_SECTION_BEGIN();
-        // if (IsMacProcessPending == 1)
-        // {
-        //     // Clear flag and prevent MCU to go into low power modes.
-        //     IsMacProcessPending = 0;
-        // }
-        // else
-        // {
-        //     // The MCU wakes up through events
-        //     BoardLowPowerHandler();
-        // }
-        // CRITICAL_SECTION_END();
+        CRITICAL_SECTION_BEGIN();
+        if (IsMacProcessPending == 1)
+        {
+            // Clear flag and prevent MCU to go into low power modes.
+            IsMacProcessPending = 0;
+        }
+        else
+        {
+            // The MCU wakes up through events
+            BoardLowPowerHandler();
+        }
+        CRITICAL_SECTION_END();
     }
 }
 

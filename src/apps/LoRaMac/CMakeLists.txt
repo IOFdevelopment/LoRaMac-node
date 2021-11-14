@@ -69,6 +69,13 @@ if(SUB_PROJECT STREQUAL periodic-uplink-lpp)
     )
 
     #---------------------------------------------------------------------------------------
+    # Application LoRaMac handler
+    #---------------------------------------------------------------------------------------
+    list(APPEND ${PROJECT_NAME}_IOF
+        "${CMAKE_CURRENT_LIST_DIR}/common/iofHandler/iofHandler.c"
+    )
+
+    #---------------------------------------------------------------------------------------
     # LoRaMac handler applicative packages
     #---------------------------------------------------------------------------------------
     list(APPEND ${PROJECT_NAME}_LMHP
@@ -120,6 +127,7 @@ file(GLOB ${PROJECT_NAME}_SOURCES "${CMAKE_CURRENT_LIST_DIR}/${SUB_PROJECT}/${BO
 add_executable(${PROJECT_NAME}-${SUB_PROJECT}
                             ${${PROJECT_NAME}_COMMON}
                             ${${PROJECT_NAME}_LMH}
+                            ${${PROJECT_NAME}_IOF}
                             ${${PROJECT_NAME}_LMHP}
                             ${${PROJECT_NAME}_SOURCES}
                             $<TARGET_OBJECTS:mac>
@@ -146,6 +154,7 @@ target_compile_definitions(${PROJECT_NAME}-${SUB_PROJECT}  PUBLIC
 
 target_include_directories(${PROJECT_NAME}-${SUB_PROJECT} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_CURRENT_SOURCE_DIR}/common/iofHandler
     ${CMAKE_CURRENT_SOURCE_DIR}/common/LmHandler
     ${CMAKE_CURRENT_SOURCE_DIR}/common/LmHandler/packages
     ${CMAKE_CURRENT_SOURCE_DIR}/${SUB_PROJECT}/${BOARD}
