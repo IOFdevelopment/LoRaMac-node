@@ -308,12 +308,15 @@ int main(void)
     printf("Pasó el loop\r\n");
 
     //LmHandlerJoin();
+    
+    //////////TEST
     uint8_t aTest[] = {'0', '1'} , bTest = 1;
     iofJoin (aTest, bTest);
 
     iofGetEUI(aTest, bTest);
 
     printIOF();
+    /////////TEST
  
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
