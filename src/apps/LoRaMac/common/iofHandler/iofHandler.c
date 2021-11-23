@@ -16,7 +16,8 @@
 #include "LmHandler.h"
 #include "secure-element-nvm.h"
 
-SecureElementNvmData_t *SeNvm; //To get DevEui
+static LmHandlerParams_t *LmHandlerParams; //To transmit function
+SecureElementNvmData_t *SeNvm;             //To get DevEui
 
 void printIOF (void)
 {
@@ -34,7 +35,22 @@ uint8_t iofJoin (uint8_t *a, uint8_t b)
     return 0;
 }
 
-//uint8_t iofTransmit(uint8_t *a, uint8_t b)
+// uint8_t iofTransmit(uint8_t *a, uint8_t b)
+// {
+//      LmHandlerAppData_t appData =
+//             {
+//                 .Buffer = a,   //Si en a me dan el buffer a enviar y en b el largo
+//                 .BufferSize = b,
+//                 .Port = 0,
+//             };
+//         if (LmHandlerSend(&appData, LmHandlerParams->IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
+//         {
+//             printf("Message sent from iofHandler\r\n");
+//         }else
+//         {
+//            printf("Error at send the message from iofHandler\r\n"); 
+//         }
+// }
 
 // uint8_t iofGPSTime(uint8_t *a, uint8_t b)
 
