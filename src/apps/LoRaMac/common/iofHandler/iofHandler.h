@@ -41,10 +41,11 @@ uint8_t iofJoin(uint8_t *a, uint8_t b);
 /*!
  * \brief 
  *
- * \param 
+ * \param *a: buffer to transmit
+ *         b: buffer size
  * \retval 
  */
-// uint8_t iofTransmit(uint8_t *a, uint8_t b);
+uint8_t iofTransmit(uint8_t *a, uint8_t b);
 
 /*!
  * \brief 
@@ -52,7 +53,7 @@ uint8_t iofJoin(uint8_t *a, uint8_t b);
  * \param 
  * \retval 
  */
-// uint8_t iofGPSTime(uint8_t *a, uint8_t b);
+uint8_t iofGPSTime(uint8_t *a, uint8_t b);
 
 /*!
  * \brief Get the DevEui
@@ -68,7 +69,7 @@ uint8_t iofGetEUI(uint8_t *a, uint8_t b);
  * \param 
  * \retval 
  */
-// uint8_t iofLinkCheck(uint8_t *a, uint8_t b);
+uint8_t iofLinkCheck(uint8_t *a, uint8_t b);
 
 /*!
  * \brief 

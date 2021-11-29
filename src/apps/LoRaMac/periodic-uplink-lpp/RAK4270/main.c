@@ -115,6 +115,7 @@ typedef enum
  * User application data
  */
 static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
+//const uint8_t AppDataBufferSize = 0;
 
 /*!
  * User application data structure
@@ -150,6 +151,15 @@ static TimerEvent_t Led2Timer;
  * Timer to handle the state of LED beacon indicator
  */
 static TimerEvent_t LedBeaconTimer;
+
+/*!
+ * System time
+ */
+SysTime_t nowTime =
+{
+    .Seconds = 1638141194,
+    .SubSeconds = 0,
+};
 
 static void OnMacProcessNotify(void);
 static void OnNvmDataChange(LmHandlerNvmContextStates_t state, uint16_t size);
@@ -268,6 +278,8 @@ int main(void)
     BoardInitMcu();
     BoardInitPeriph();
 
+    //SysTimeSet( nowTime );
+
     TimerInit(&Led1Timer, OnLed1TimerEvent);
     TimerSetValue(&Led1Timer, 25);
 
@@ -308,17 +320,26 @@ int main(void)
     printf("Pasó el loop\r\n");
 
     //LmHandlerJoin();
-    
+
     //////////TEST
-    uint8_t aTest[] = {'0', '1'} , bTest = 1;
-    iofJoin (aTest, bTest);
+    uint8_t aTest[] = {'0', '1'}, bTest = 1;
+    iofJoin(aTest, bTest);
 
     iofGetEUI(aTest, bTest);
 
     printIOF();
-    /////////TEST
- 
+
+    iofGPSTime(aTest, bTest);
+
+    iofLinkCheck(aTest, bTest);
+    /////////TEST END
+
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
+
+//////////TEST
+    uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A'}, bTestTransmit = 4;
+    iofTransmit(aTestTransmit, bTestTransmit);
+//////////TEST END
 
     //DisplayNetworkParametersUpdate(CommissioningParams);
 
@@ -348,6 +369,7 @@ int main(void)
         }
         CRITICAL_SECTION_END();
     }
+
 }
 
 static void OnMacProcessNotify(void)
