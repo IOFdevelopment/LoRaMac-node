@@ -114,8 +114,8 @@ typedef enum
 /*!
  * User application data
  */
-static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
-//const uint8_t AppDataBufferSize = 0;
+static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE] = {'0','1','2','3','4','5','6','7','8','9'};
+const uint8_t AppDataBufferSize = 10;
 
 /*!
  * User application data structure
@@ -123,7 +123,7 @@ static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE];
 static LmHandlerAppData_t AppData =
     {
         .Buffer = AppDataBuffer,
-        .BufferSize = 0,
+        .BufferSize = AppDataBufferSize,
         .Port = 0,
 };
 
@@ -337,8 +337,8 @@ int main(void)
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
 //////////TEST
-    uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A'}, bTestTransmit = 4;
-    iofTransmit(aTestTransmit, bTestTransmit);
+    //uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A'}, bTestTransmit = 4;
+    //iofTransmit(aTestTransmit, bTestTransmit);
 //////////TEST END
 
     //DisplayNetworkParametersUpdate(CommissioningParams);

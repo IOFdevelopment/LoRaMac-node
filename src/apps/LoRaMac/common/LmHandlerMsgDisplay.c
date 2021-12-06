@@ -369,6 +369,8 @@ void DisplayRxUpdate(LmHandlerAppData_t* appData, LmHandlerRxParams_t* params)
     printf("DATA RATE   : DR_%d\n", params->Datarate);
     printf("RX RSSI     : %d\n", params->Rssi);
     printf("RX SNR      : %d\n", params->Snr);
+    //Podría enviarselos al micro ST acá directamente
+    //if(se llamó a la función iofLinkCheck[pongo un flag en alto]){enviarlos al ST}
 
     printf("\n");
 }
