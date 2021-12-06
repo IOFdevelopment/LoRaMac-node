@@ -24,6 +24,8 @@ static LmHandlerParams_t *LmHandlerParams; //To transmit function
 SecureElementNvmData_t *SeNvm;             //To get DevEui
 
 LmHandlerRxParams_t *RxParams; //To get Rx params
+LoRaMacHandlerBeaconParams_t *BeaconParams;
+LmHandlerRxParams_t *params;
 
 void printIOF(void)
 {
@@ -98,12 +100,27 @@ uint8_t iofGetEUI(uint8_t *a, uint8_t b)
 
 uint8_t iofLinkCheck(uint8_t *a, uint8_t b)
 {
-    // printf("IoF get EUI funtion has been called\r\n");
-    // printf("Params received --- a:%u ---- b:%u\r\n", a[0], b);
+    printf("IoF get EUI funtion has been called\r\n");
+    printf("Params received --- a:%u ---- b:%u\r\n", a[0], b);
 
     // printf("RSSI: %i\r\n", RxParams->Rssi);
     // printf("SNR: %i\r\n", RxParams->Snr);
     // printf("Data rate: %i\r\n", RxParams->Datarate);
+
+    printf("DATA RATE   : DR_%d\n", params->Datarate);
+    printf("RX RSSI     : %d\n", params->Rssi);
+    printf("RX SNR      : %d\n", params->Snr);
+
+    //lleno el buffer a devolver
+    a[0] = params->Rssi;
+    a[2] = params->Snr;
+    a[3] = params->Datarate;
+    printf("Vector a total size: %u\n", sizeof(a));
+    for(unsigned int i = 0 ; i < sizeof(a) ; i++)
+    {
+        printf("%u", a[i]);
+    }
+    printf("\r\n");
 
     return 0;
 }
