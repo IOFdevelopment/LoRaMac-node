@@ -19,7 +19,7 @@
  * \author    Miguel Luis ( Semtech )
  */
 
-/*! \file periodic-uplink/NucleoL073/main.c */
+/*! \file periodic-uplink/RAK4270/main.c */
 
 #include <stdio.h>
 #include <string.h>
@@ -38,6 +38,7 @@
 #include "LmhpCompliance.h"
 #include "CayenneLpp.h"
 #include "LmHandlerMsgDisplay.h"
+#include "sx126x.h"
 
 #include "secure-element.h"
 
@@ -114,7 +115,7 @@ typedef enum
 /*!
  * User application data
  */
-static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE] = {'0','1','2','3','4','5','6','7','8','9'};
+static uint8_t AppDataBuffer[LORAWAN_APP_DATA_BUFFER_MAX_SIZE] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 const uint8_t AppDataBufferSize = 10;
 
 /*!
@@ -152,13 +153,23 @@ static TimerEvent_t Led2Timer;
  */
 static TimerEvent_t LedBeaconTimer;
 
+/*
+ * IoF GPIO Pins
+ */
+iofPins_t iofPins;
+
+/*
+ * Boolean variable to require uplink procces
+ */
+bool uplinkRequire = false;
+
 /*!
  * System time
  */
 SysTime_t nowTime =
-{
-    .Seconds = 1638141194,
-    .SubSeconds = 0,
+    {
+        .Seconds = 1638141194,
+        .SubSeconds = 0,
 };
 
 static void OnMacProcessNotify(void);
@@ -181,6 +192,11 @@ static void UplinkProcess(void);
 static void OnTxPeriodicityChanged(uint32_t periodicity);
 static void OnTxFrameCtrlChanged(LmHandlerMsgTypes_t isTxConfirmed);
 static void OnPingSlotPeriodicityChanged(uint8_t pingSlotPeriodicity);
+
+/*!
+ * Function executed when Uplink process is require by interrupt
+ */
+void irqUplinkProcess(void *context);
 
 /*!
  * Function executed on TxTimer event
@@ -289,6 +305,10 @@ int main(void)
     TimerInit(&LedBeaconTimer, OnLedBeaconTimerEvent);
     TimerSetValue(&LedBeaconTimer, 5000);
 
+    //Configure Interrupts GPIO pins
+    GpioInit(&iofPins.Test, PA_12, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0);
+    GpioSetInterrupt(&iofPins.Test, IRQ_FALLING_EDGE, IRQ_HIGH_PRIORITY, irqUplinkProcess);
+
     // Initialize transmission periodicity variable
     TxPeriodicity = APP_TX_DUTYCYCLE + randr(-APP_TX_DUTYCYCLE_RND, APP_TX_DUTYCYCLE_RND);
 
@@ -336,10 +356,10 @@ int main(void)
 
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
-//////////TEST
+    //////////TEST
     //uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A'}, bTestTransmit = 4;
     //iofTransmit(aTestTransmit, bTestTransmit);
-//////////TEST END
+    //////////TEST END
 
     //DisplayNetworkParametersUpdate(CommissioningParams);
 
@@ -353,8 +373,12 @@ int main(void)
         GpioToggle(&Led1);
         //UartPutBuffer(&Uart2, (uint8_t*)buff, strlen(buff));
 
-        // Process application uplinks management
-        UplinkProcess();
+        if (uplinkRequire)
+        {
+            // Process application uplinks management
+            UplinkProcess();
+            uplinkRequire = false;
+        }
 
         CRITICAL_SECTION_BEGIN();
         if (IsMacProcessPending == 1)
@@ -369,7 +393,12 @@ int main(void)
         }
         CRITICAL_SECTION_END();
     }
+}
 
+void irqUplinkProcess(void *context)
+{
+    printf("IRQ Uplink Process called\r\n");
+    uplinkRequire = true;
 }
 
 static void OnMacProcessNotify(void)

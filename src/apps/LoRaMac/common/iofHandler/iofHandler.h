@@ -12,15 +12,31 @@
  *
  */
 
-
 #ifndef __IOFHANDLER_H__
 #define __IOFHANDLER_H__
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "gpio.h"
 
-void printIOF (void);
+#define RAK_RST     PB_14    //Controlled by Master (ST)
+#define RAK_IO1     PB_12    //Controlled by Master (ST)
+#define RAK_IO2     PB_4     //Controlled by Slave  (RAK)
+#define RAK_UART_TX PA_2    //Controlled by Slave  (RAK)
+#define RAK_UART_RX PA_3    //Controlled by Master (ST) 
+
+typedef struct iofPins_s
+{
+    Gpio_t Test;
+    Gpio_t rakRst;
+    Gpio_t rakIO1;
+    Gpio_t rakIO2;
+    Gpio_t rakUartTX;
+    Gpio_t rakUartRX;
+} iofPins_t;
+
+void printIOF(void);
 
 /*!
  * \brief Reset all LoRa params to default
