@@ -641,6 +641,11 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
     }
     else
     {
+        //Se intentó modificando estos parametros pero no se envía lo deseado (lo mismo en el if de arriba)
+        // mcpsReq.Req.Unconfirmed.fPort = 2;
+        // mcpsReq.Req.Unconfirmed.fBufferSize = 10;
+        //uint8_t bufferSend [10] = {'0','1','2','3','4','5','6','7','8','9'};
+        // mcpsReq.Req.Unconfirmed.fBuffer = bufferSend;
         mcpsReq.Req.Unconfirmed.fPort = appData->Port;
         mcpsReq.Req.Unconfirmed.fBufferSize = appData->BufferSize;
         mcpsReq.Req.Unconfirmed.fBuffer = appData->Buffer;

@@ -98,6 +98,7 @@ uint8_t iofGetEUI(uint8_t *a, uint8_t b)
     return 0;
 }
 
+
 uint8_t iofLinkCheck(uint8_t *a, uint8_t b)
 {
     printf("IoF get EUI funtion has been called\r\n");
@@ -124,6 +125,8 @@ uint8_t iofLinkCheck(uint8_t *a, uint8_t b)
 
     return 0;
 }
+
+
 
 // uint8_t iofSleep(uint8_t *a, uint8_t b)
 
