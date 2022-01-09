@@ -90,7 +90,7 @@ static LmHandlerJoinParams_t JoinParams =
 static LmHandlerTxParams_t TxParams =
     {
         .CommissioningParams = &CommissioningParams,
-        .MsgType = LORAMAC_HANDLER_UNCONFIRMED_MSG,
+        .MsgType = LORAMAC_HANDLER_CONFIRMED_MSG,
         .AckReceived = 0,
         .Datarate = DR_0,
         .UplinkCounter = 0,
@@ -251,6 +251,7 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     IsClassBSwitchPending = false;
     IsUplinkTxPending = false;
 
+    // if (LoRaMacInitialization(&LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_AU915) != LORAMAC_STATUS_OK)
     if (LoRaMacInitialization(&LoRaMacPrimitives, &LoRaMacCallbacks, LmHandlerParams->Region) != LORAMAC_STATUS_OK)
     {
         return LORAMAC_HANDLER_ERROR;
@@ -378,6 +379,48 @@ LmHandlerErrorStatus_t LmHandlerInit(LmHandlerCallbacks_t *handlerCallbacks,
     mibReq.Param.EnablePublicNetwork = LmHandlerParams->PublicNetworkEnable;
     LoRaMacMibSetRequestConfirm(&mibReq);
 
+    //Change channel mask to the first sub band
+    // mibReq.Type = MIB_CHANNELS_MASK;
+    // uint16_t channelMaskFirstSubBand[5];
+    // channelMaskFirstSubBand[0] = 0xFF00;
+    // channelMaskFirstSubBand[1] = 0x0000;
+    // channelMaskFirstSubBand[2] = 0x0000;
+    // channelMaskFirstSubBand[3] = 0x0000;
+    // channelMaskFirstSubBand[4] = 0x0000;
+    // channelMaskFirstSubBand[5] = 0x0000;
+    // mibReq.Param.ChannelsMask = channelMaskFirstSubBand;
+    // LoRaMacMibSetRequestConfirm(&mibReq); //Validate the parameter change
+
+    // //Showing the changed parameter
+    // mibReq.Type = MIB_CHANNELS_MASK;
+    // LoRaMacMibGetRequestConfirm(&mibReq);
+    // printf("\r\nCHANNEL MASK:");
+    // for (uint8_t i = 0; i < 5; i++)
+    // {
+    //     printf("%04X ", mibReq.Param.ChannelsMask[i]);
+    // }
+    // printf("\r\n");
+
+    //Change default mask
+    //Esta parte cambia la mascara, si se pone otro valor no valido, el programa arroja -> NO CHANNEL FOUND
+    mibReq.Type = MIB_CHANNELS_DEFAULT_MASK;
+    uint16_t channelMaskFirstSubBandDefault[5];
+    // channelMaskFirstSubBandDefault[0] = 0xFF00;
+    // channelMaskFirstSubBandDefault[1] = 0x0000;
+    // channelMaskFirstSubBandDefault[2] = 0x0000;
+    // channelMaskFirstSubBandDefault[3] = 0x0000;
+    // channelMaskFirstSubBandDefault[4] = 0x0000;
+    // channelMaskFirstSubBandDefault[5] = 0x0000;
+    //Seteado para utilizar la primer sub banda
+    channelMaskFirstSubBandDefault[0] = 0xFFFF;
+    channelMaskFirstSubBandDefault[1] = 0x0000;
+    channelMaskFirstSubBandDefault[2] = 0x0000;
+    channelMaskFirstSubBandDefault[3] = 0x0000;
+    channelMaskFirstSubBandDefault[4] = 0x00FF;
+    channelMaskFirstSubBandDefault[5] = 0x0000;
+    mibReq.Param.ChannelsDefaultMask = channelMaskFirstSubBandDefault;
+    LoRaMacMibSetRequestConfirm(&mibReq); //Validate the parameter change
+    
     //Change ADR to false
     mibReq.Type = MIB_ADR;
     mibReq.Param.AdrEnable = false;
@@ -580,7 +623,7 @@ static void LmHandlerJoinRequest(bool isOtaa)
         // Update commissioning parameters activation type variable.
         CommissioningParams.IsOtaaActivation = false;
     }
-    // Starts the join procedure
+    // Starts the join procedure here
     LmHandlerCallbacks->OnMacMlmeRequest(LoRaMacMlmeRequest(&mlmeReq), &mlmeReq, mlmeReq.ReqReturn.DutyCycleWaitTime);
     DutyCycleWaitTime = mlmeReq.ReqReturn.DutyCycleWaitTime;
 }
@@ -641,11 +684,14 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
     }
     else
     {
+        //TEST
         //Se intentó modificando estos parametros pero no se envía lo deseado (lo mismo en el if de arriba)
         // mcpsReq.Req.Unconfirmed.fPort = 2;
         // mcpsReq.Req.Unconfirmed.fBufferSize = 10;
-        //uint8_t bufferSend [10] = {'0','1','2','3','4','5','6','7','8','9'};
+        // uint8_t bufferSend [10] = {'0','1','2','3','4','5','6','7','8','9'};
         // mcpsReq.Req.Unconfirmed.fBuffer = bufferSend;
+        //TEST
+
         mcpsReq.Req.Unconfirmed.fPort = appData->Port;
         mcpsReq.Req.Unconfirmed.fBufferSize = appData->BufferSize;
         mcpsReq.Req.Unconfirmed.fBuffer = appData->Buffer;
@@ -653,6 +699,10 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
 
     TxParams.AppData = *appData;
     TxParams.Datarate = LmHandlerParams->TxDatarate;
+
+    printf("Begining the print of Display TxUpdate\r\n");
+    DisplayTxUpdate(&TxParams);
+    printf("Display TxUpdate print finished\r\n");
 
     status = LoRaMacMcpsRequest(&mcpsReq);
     LmHandlerCallbacks->OnMacMcpsRequest(status, &mcpsReq, mcpsReq.ReqReturn.DutyCycleWaitTime);

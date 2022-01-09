@@ -337,7 +337,6 @@ int main(void)
     // The LoRa-Alliance Compliance protocol package should always be
     // initialized and activated.
     LmHandlerPackageRegister(PACKAGE_ID_COMPLIANCE, &LmhpComplianceParams);
-    printf("Pasó el loop\r\n");
 
     //LmHandlerJoin();
 
@@ -376,6 +375,7 @@ int main(void)
         if (uplinkRequire)
         {
             // Process application uplinks management
+            printf("Uplink Process require\r\n");
             UplinkProcess();
             uplinkRequire = false;
         }
@@ -529,15 +529,17 @@ static void PrepareTxFrame(void)
     AppData.BufferSize = CayenneLppGetSize();
 
     //TEST
-    // uint8_t testbuff [10] = {'0','1','2','3','4','5','6','7','8','9'};
-    // AppData.Buffer = testbuff;
-    // AppData.BufferSize = 10;
-    // AppData.Port = 2;
+    uint8_t testbuff [15] = {'H','O','L','A','F','A','C','U','C','O','M','O','V','A','\0'};
+    AppData.Buffer = testbuff;
+    AppData.BufferSize = 5;
+    AppData.Port = 2;
     //TEST
 
-    if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
+    //if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
+    if (LmHandlerSend(&AppData, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
     {
         // Switch LED 1 ON
+        printf("ENVIADO CON ÉXITO\r\n");
         GpioWrite(&Led1, 1);
         TimerStart(&Led1Timer);
     }

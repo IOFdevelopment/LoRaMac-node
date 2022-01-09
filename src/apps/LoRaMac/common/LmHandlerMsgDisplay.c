@@ -318,6 +318,14 @@ void DisplayTxUpdate(LmHandlerTxParams_t* params)
                     break;
                 }
             case LORAMAC_REGION_AU915:
+                {
+                    for (uint8_t i = 0; i < 5; i++)
+                    {
+                        printf("%04X ", mibGet.Param.ChannelsMask[i]);
+                    }
+                    printf("\nACTIVE REGION AU915");
+                    break;
+                }
             case LORAMAC_REGION_CN470:
             case LORAMAC_REGION_US915:
                 {
@@ -325,6 +333,7 @@ void DisplayTxUpdate(LmHandlerTxParams_t* params)
                     {
                         printf("%04X ", mibGet.Param.ChannelsMask[i]);
                     }
+                    printf("\nACTIVE REGION US915");
                     break;
                 }
             default:

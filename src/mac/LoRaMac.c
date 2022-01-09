@@ -1330,7 +1330,7 @@ static void ProcessRadioRxDone(void)
         }
 
         if ((macMsgData.FPort == LORAMAC_CERT_FPORT) && (Nvm.MacGroup2.IsCertPortOn == false))
-        {   // Do not notify the upper layer of data reception on FPort LORAMAC_CERT_FPORT if the port
+        { // Do not notify the upper layer of data reception on FPort LORAMAC_CERT_FPORT if the port
             // handling is disabled.
             MacCtx.McpsIndication.Port = macMsgData.FPort;
             MacCtx.McpsIndication.Buffer = NULL;
@@ -4618,6 +4618,15 @@ LoRaMacStatus_t LoRaMacMibSetRequestConfirm(MibRequestConfirm_t *mibSet)
     }
     case MIB_CHANNELS_MASK:
     {
+        //Seteo de la máscara del subcanal (Se debe setear la sub banda 1 -> FF00 0000 0000 0000 0000)
+        // uint16_t channelMaskFirstSubBand[5];
+        // channelMaskFirstSubBand[0] = 0xFF00;
+        // channelMaskFirstSubBand[1] = 0x0000;
+        // channelMaskFirstSubBand[2] = 0x0000;
+        // channelMaskFirstSubBand[3] = 0x0000;
+        // channelMaskFirstSubBand[4] = 0x0000;
+        // channelMaskFirstSubBand[5] = 0x0000;
+        // chanMaskSet.ChannelsMaskIn = channelMaskFirstSubBand;
         chanMaskSet.ChannelsMaskIn = mibSet->Param.ChannelsMask;
         chanMaskSet.ChannelsMaskType = CHANNELS_MASK;
 
