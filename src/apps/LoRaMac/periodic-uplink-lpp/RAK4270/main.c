@@ -286,6 +286,18 @@ extern Gpio_t Led2; // Rx
  */
 extern Uart_t Uart2;
 
+/*
+ * Customize buffer to send
+ */
+uint8_t bufferToSend[15] = {'F', 'I', 'R', 'S', 'T', 'B', 'U', 'F', 'F', 'E', 'R', 'T', 'E', 'S', 'T'};
+const uint8_t bufferToSendSize = 15;
+LmHandlerAppData_t customizeBufferToSend =
+    {
+        .Buffer = bufferToSend, //Si en a me dan el buffer a enviar y en b el largo
+        .BufferSize = bufferToSendSize,
+        .Port = 2,
+};
+
 /*!
  * Main application entry point.
  */
@@ -356,8 +368,8 @@ int main(void)
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
     //////////TEST
-    // uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A','F','A','C','U','C','O','M','O','V','A'}, 
-    // bTestTransmit;
+    // uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A', 'F', 'A', 'C', 'U', 'C', 'O', 'M', 'O', 'V', 'A'},
+    //         bTestTransmit;
     // bTestTransmit = sizeof(aTestTransmit);
     // iofTransmit(aTestTransmit, bTestTransmit);
     //////////TEST END
@@ -377,6 +389,9 @@ int main(void)
         if (uplinkRequire)
         {
             // Process application uplinks management
+            //Podriamos cambiar las variable bufferToSend y bufferToSendSize acá y luego enviar esas en LmHandlerSend
+            //bufferToSend[] = {'H', 'O', 'L', 'A', 'F', 'A', 'C', 'U', 'C', 'O', 'M', 'O', 'V', 'A'};
+            //bufferToSendSize = sizeof(bufferToSend);
             printf("Uplink Process require\r\n");
             UplinkProcess();
             uplinkRequire = false;
@@ -531,14 +546,15 @@ static void PrepareTxFrame(void)
     AppData.BufferSize = CayenneLppGetSize();
 
     //TEST
-    uint8_t testbuff [15] = {'H','O','L','A','F','A','C','U','C','O','M','O','V','A'};
-    AppData.Buffer = testbuff;
-    AppData.BufferSize = 15;
-    AppData.Port = 2;
+    // uint8_t testbuff[15] = {'H', 'O', 'L', 'A', 'F', 'A', 'C', 'U', 'C', 'O', 'M', 'O', 'V', 'A'};
+    // AppData.Buffer = testbuff;
+    // AppData.BufferSize = 15;
+    // AppData.Port = 2;
     //TEST
 
     //if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
-    if (LmHandlerSend(&AppData, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
+    //if (LmHandlerSend(&AppData, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
+    if (LmHandlerSend(&customizeBufferToSend, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
     {
         // Switch LED 1 ON
         printf("ENVIADO CON ÉXITO\r\n");
