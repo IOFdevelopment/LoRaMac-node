@@ -356,8 +356,10 @@ int main(void)
     StartTxProcess(LORAMAC_HANDLER_TX_ON_TIMER);
 
     //////////TEST
-    //uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A'}, bTestTransmit = 4;
-    //iofTransmit(aTestTransmit, bTestTransmit);
+    // uint8_t aTestTransmit[] = {'H', 'O', 'L', 'A','F','A','C','U','C','O','M','O','V','A'}, 
+    // bTestTransmit;
+    // bTestTransmit = sizeof(aTestTransmit);
+    // iofTransmit(aTestTransmit, bTestTransmit);
     //////////TEST END
 
     //DisplayNetworkParametersUpdate(CommissioningParams);
@@ -529,9 +531,9 @@ static void PrepareTxFrame(void)
     AppData.BufferSize = CayenneLppGetSize();
 
     //TEST
-    uint8_t testbuff [15] = {'H','O','L','A','F','A','C','U','C','O','M','O','V','A','\0'};
+    uint8_t testbuff [15] = {'H','O','L','A','F','A','C','U','C','O','M','O','V','A'};
     AppData.Buffer = testbuff;
-    AppData.BufferSize = 5;
+    AppData.BufferSize = 15;
     AppData.Port = 2;
     //TEST
 

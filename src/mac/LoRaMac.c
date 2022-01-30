@@ -5255,6 +5255,8 @@ LoRaMacStatus_t LoRaMacMcpsRequest(McpsReq_t *mcpsRequest)
         fBuffer = request.Req.Unconfirmed.fBuffer;
         fBufferSize = request.Req.Unconfirmed.fBufferSize;
         datarate = request.Req.Unconfirmed.Datarate;
+
+        printf("TYPE: UNCONFIRMED\r\n");
         break;
     }
     case MCPS_CONFIRMED:
@@ -5266,6 +5268,7 @@ LoRaMacStatus_t LoRaMacMcpsRequest(McpsReq_t *mcpsRequest)
         fBuffer = request.Req.Confirmed.fBuffer;
         fBufferSize = request.Req.Confirmed.fBufferSize;
         datarate = request.Req.Confirmed.Datarate;
+        printf("TYPE: CONFIRMED\r\n");
         break;
     }
     case MCPS_PROPRIETARY:
@@ -5320,6 +5323,12 @@ LoRaMacStatus_t LoRaMacMcpsRequest(McpsReq_t *mcpsRequest)
         // Verification of response timeout for class b and class c
         LoRaMacHandleResponseTimeout(REGION_COMMON_CLASS_B_C_RESP_TIMEOUT,
                                      MacCtx.ResponseTimeoutStartTime);
+
+        //TEST
+        // uint8_t fBuffer[] = {'H', 'O', 'L', 'A', 'F', 'A', 'Q'};
+        // uint8_t fPort = 2;
+        // uint16_t fBufferSize = sizeof(fBuffer);
+        //TEST
 
         status = Send(&macHdr, fPort, fBuffer, fBufferSize);
         if (status == LORAMAC_STATUS_OK)
