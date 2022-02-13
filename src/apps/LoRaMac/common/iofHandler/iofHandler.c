@@ -27,6 +27,10 @@ LmHandlerRxParams_t *RxParams; //To get Rx params
 LoRaMacHandlerBeaconParams_t *BeaconParams;
 LmHandlerRxParams_t *params;
 
+//uint8_t transmissionNumber = 0;
+//uint8_t numberOfTransmision[] = {'0'};
+uint8_t bufferTransmit [] = {'T', 'R', 'A', 'N', 'S', 'M', 'I', 'S', 'I', 'O', 'N'};
+
 void printIOF(void)
 {
     printf("Imprimiendo desde iofHandler\r\n");
@@ -43,43 +47,10 @@ uint8_t iofJoin(uint8_t *a, uint8_t b)
     return 0;
 }
 
-uint8_t iofTransmit(uint8_t *a, uint8_t b)
+uint8_t iofTransmit(uint8_t *buffer2send, uint8_t bufferSize)
 {
-    LmHandlerAppData_t appData =
-        {
-            .Buffer = a, //Si en a me dan el buffer a enviar y en b el largo
-            .BufferSize = b,
-            .Port = 0,
-        };
+    //Poner FLAG de transmisión en alto (El que ahora salta con interrupción del botón)
 
-    // uint8_t testbuff [15] = {'H','O','L','A','F','A','C','U','C','O','M','O','V','A','\0'};
-    // appData.Buffer = testbuff;
-    // appData.BufferSize = 15;
-    // appData.Port = 2;
-
-    //if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
-    if (LmHandlerSend(&appData, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
-    {
-        printf("ENVIADO CON ÉXITO DESDE IOF HANDLER\r\n");
-    }
-     else
-    {
-        printf("Error at send the message from iofHandler\r\n");
-    }
-    // LmHandlerAppData_t appData =
-    //     {
-    //         .Buffer = a, //Si en a me dan el buffer a enviar y en b el largo
-    //         .BufferSize = b,
-    //         .Port = 0,
-    //     };
-    // if (LmHandlerSend(&appData, LmHandlerParams->IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
-    // {
-    //     printf("Message sent from iofHandler\r\n");
-    // }
-    // else
-    // {
-    //     printf("Error at send the message from iofHandler\r\n");
-    // }
     return 0;
 }
 

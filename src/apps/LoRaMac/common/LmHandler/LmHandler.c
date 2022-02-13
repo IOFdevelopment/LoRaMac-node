@@ -662,8 +662,13 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
     if (LmHandlerJoinStatus() != LORAMAC_HANDLER_SET)
     {
         // The network isn't joined, try again.
+        printf("El dispositivo no esta unido a la red, uniendose... \r\n");
         LmHandlerJoinRequest(CommissioningParams.IsOtaaActivation);
-        return LORAMAC_HANDLER_ERROR;
+        DelayMs(2000); //Espero hasta que termine de joinearse
+        if (LmHandlerJoinStatus() != LORAMAC_HANDLER_SET) //Si no se pudovolver a unir retorno error, sino sigo para enviar lo requerido
+        {
+            return LORAMAC_HANDLER_ERROR;
+        }
     }
 
     TxParams.MsgType = isTxConfirmed;
@@ -676,22 +681,9 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
         mcpsReq.Type = MCPS_UNCONFIRMED;
         mcpsReq.Req.Unconfirmed.fBuffer = NULL;
         mcpsReq.Req.Unconfirmed.fBufferSize = 0;
-
-        //TEST
-        // mcpsReq.Req.Unconfirmed.fPort = appData->Port;
-        // mcpsReq.Req.Unconfirmed.fBufferSize = appData->BufferSize;
-        // mcpsReq.Req.Unconfirmed.fBuffer = appData->Buffer;
-        //TEST
     }
     else
     {
-        //TEST
-        //Se intentó modificando estos parametros pero no se envía lo deseado (lo mismo en el if de arriba)
-        // mcpsReq.Req.Unconfirmed.fPort = 2;
-        // mcpsReq.Req.Unconfirmed.fBufferSize = 10;
-        // uint8_t bufferSend [10] = {'0','1','2','3','4','5','6','7','8','9'};
-        // mcpsReq.Req.Unconfirmed.fBuffer = bufferSend;
-        //TEST
         printf("LORAMAC Status OK\r\n");
         mcpsReq.Req.Unconfirmed.fPort = appData->Port;
         mcpsReq.Req.Unconfirmed.fBufferSize = appData->BufferSize;
@@ -701,38 +693,6 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
     TxParams.AppData = *appData;
     TxParams.Datarate = LmHandlerParams->TxDatarate;
 
-    printf("Begining the print of Display TxUpdate\r\n");
-    DisplayTxUpdate(&TxParams);
-    printf("Display TxUpdate print finished\r\n");
-
-    //TEST -> TRAMA A EVIAR AL NETWORK SERVER
-    // uint8_t myBuffer[] = {'H', 'O', 'L', 'A', 'F', 'A', 'C','U'};
-    // McpsReq_t myMcpsReq;
-    // myMcpsReq.Type = MCPS_CONFIRMED;
-    // myMcpsReq.Req.Unconfirmed.fPort = 2;
-    // myMcpsReq.Req.Unconfirmed.fBuffer = myBuffer;
-    // myMcpsReq.Req.Unconfirmed.fBufferSize = sizeof(myBuffer);
-    // LoRaMacStatus_t myStatus = LoRaMacMcpsRequest(&myMcpsReq);
-    // if (myStatus == LORAMAC_STATUS_OK)
-    // {
-    //     printf("Successfully sent\r\n");
-    //     // Service started successfully. Waiting for the MCPS-Confirm event
-    //     LmHandlerCallbacks->OnMacMcpsRequest(myStatus, &myMcpsReq, myMcpsReq.ReqReturn.DutyCycleWaitTime);
-    //     DutyCycleWaitTime = myMcpsReq.ReqReturn.DutyCycleWaitTime;
-
-    //     if (myStatus == LORAMAC_STATUS_OK)
-    //     {
-    //         IsUplinkTxPending = false;
-    //         return LORAMAC_HANDLER_SUCCESS;
-    //     }
-    //     else
-    //     {
-    //         return LORAMAC_HANDLER_ERROR;
-    //     }
-    // }
-    //TEST
-
-    //SI EL TEST DE ARRIBA NO ESTA COMENTADO NO DEBERÍA LLEGAR ACÁ
     status = LoRaMacMcpsRequest(&mcpsReq);
     LmHandlerCallbacks->OnMacMcpsRequest(status, &mcpsReq, mcpsReq.ReqReturn.DutyCycleWaitTime);
     DutyCycleWaitTime = mcpsReq.ReqReturn.DutyCycleWaitTime;

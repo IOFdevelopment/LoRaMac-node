@@ -163,6 +163,16 @@ iofPins_t iofPins;
  */
 bool uplinkRequire = false;
 
+/*
+ * Boolean variable to know if the msg OK
+ */
+extern bool unconfirmedAck;
+
+/*
+ * Transmision retries when ACK is not confirmed
+ */
+uint8_t retriesAck = 1;
+
 /*!
  * System time
  */
@@ -185,9 +195,9 @@ static void OnBeaconStatusChange(LoRaMacHandlerBeaconParams_t *params);
 
 static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection);
 
-static void PrepareTxFrame(void);
+static void PrepareTxFrame(uint8_t *bufferToSend, uint8_t bufferToSendSize);
 static void StartTxProcess(LmHandlerTxEvents_t txEvent);
-static void UplinkProcess(void);
+static void UplinkProcess(uint8_t *bufferToSend, uint8_t bufferToSendSize);
 
 static void OnTxPeriodicityChanged(uint32_t periodicity);
 static void OnTxFrameCtrlChanged(LmHandlerMsgTypes_t isTxConfirmed);
@@ -217,6 +227,11 @@ static void OnLed2TimerEvent(void *context);
  * \brief Function executed on Beacon timer Timeout event
  */
 static void OnLedBeaconTimerEvent(void *context);
+
+/*!
+ * Funtion to retransmit the MSG if the ACK is not confirmed
+ */
+void acksRetransmision(void);
 
 static LmHandlerCallbacks_t LmHandlerCallbacks =
     {
@@ -289,14 +304,8 @@ extern Uart_t Uart2;
 /*
  * Customize buffer to send
  */
-uint8_t bufferToSend[15] = {'F', 'I', 'R', 'S', 'T', 'B', 'U', 'F', 'F', 'E', 'R', 'T', 'E', 'S', 'T'};
-const uint8_t bufferToSendSize = 15;
-LmHandlerAppData_t customizeBufferToSend =
-    {
-        .Buffer = bufferToSend, //Si en a me dan el buffer a enviar y en b el largo
-        .BufferSize = bufferToSendSize,
-        .Port = 2,
-};
+uint8_t bufferToSend[] = {'T', 'E', 'S', 'T'};
+uint8_t bufferToSendSize = sizeof(bufferToSend);
 
 /*!
  * Main application entry point.
@@ -384,17 +393,47 @@ int main(void)
         // Processes the LoRaMac events
         LmHandlerProcess();
         GpioToggle(&Led1);
-        //UartPutBuffer(&Uart2, (uint8_t*)buff, strlen(buff));
 
-        if (uplinkRequire)
+        if (unconfirmedAck == true)
+        {
+            if (retriesAck < (MAX_ACK_RETRIES + 1))
+            {
+                printf("Intento de retransmision #%u por NACK\r\n", retriesAck);
+                //uplinkRequire = true;
+                printf("Uplink Process require\r\n");
+                UplinkProcess(bufferToSend, bufferToSendSize);
+                retriesAck++;
+            }
+            else
+            {
+                //printf("Se superaron los intentos de retransmision por NACK...\r\nDestruyendo sesion..\r\n");
+
+                //TODO: Destruir sesión
+                /////////////////////////////DESTRUCCIÓN DE SESIÓN////////////////////////
+                // MibRequestConfirm_t mibReq;
+
+                // mibReq.Type = MIB_NETWORK_ACTIVATION;
+                // mibReq.Param.NetworkActivation = ACTIVATION_TYPE_NONE;
+                // LoRaMacMibSetRequestConfirm(&mibReq);
+                // printf("Sesión destruida\r\n");
+                /////////////////////////////DESTRUCCIÓN DE SESIÓN////////////////////////
+
+                uplinkRequire = false;
+                unconfirmedAck = false;
+                //retriesAck = 1;
+            }
+        }
+
+        if (uplinkRequire == true)
         {
             // Process application uplinks management
-            //Podriamos cambiar las variable bufferToSend y bufferToSendSize acá y luego enviar esas en LmHandlerSend
-            //bufferToSend[] = {'H', 'O', 'L', 'A', 'F', 'A', 'C', 'U', 'C', 'O', 'M', 'O', 'V', 'A'};
+            //iofTransmit(bufferToSend, bufferToSendSize);
             //bufferToSendSize = sizeof(bufferToSend);
             printf("Uplink Process require\r\n");
-            UplinkProcess();
+            UplinkProcess(bufferToSend, bufferToSendSize);
             uplinkRequire = false;
+            unconfirmedAck = false;
+            retriesAck = 1;
         }
 
         CRITICAL_SECTION_BEGIN();
@@ -527,7 +566,7 @@ static void OnSysTimeUpdate(bool isSynchronized, int32_t timeCorrection)
 /*!
  * Prepares the payload of the frame and transmits it.
  */
-static void PrepareTxFrame(void)
+static void PrepareTxFrame(uint8_t *bufferToSend, uint8_t bufferToSendSize)
 {
     if (LmHandlerIsBusy() == true)
     {
@@ -545,12 +584,12 @@ static void PrepareTxFrame(void)
     CayenneLppCopy(AppData.Buffer);
     AppData.BufferSize = CayenneLppGetSize();
 
-    //TEST
-    // uint8_t testbuff[15] = {'H', 'O', 'L', 'A', 'F', 'A', 'C', 'U', 'C', 'O', 'M', 'O', 'V', 'A'};
-    // AppData.Buffer = testbuff;
-    // AppData.BufferSize = 15;
-    // AppData.Port = 2;
-    //TEST
+    LmHandlerAppData_t customizeBufferToSend =
+        {
+            .Buffer = bufferToSend, //Si en a me dan el buffer a enviar y en b el largo
+            .BufferSize = bufferToSendSize,
+            .Port = 2,
+        };
 
     //if (LmHandlerSend(&AppData, LmHandlerParams.IsTxConfirmed) == LORAMAC_HANDLER_SUCCESS)
     //if (LmHandlerSend(&AppData, LORAMAC_HANDLER_CONFIRMED_MSG) == LORAMAC_HANDLER_SUCCESS)
@@ -560,6 +599,11 @@ static void PrepareTxFrame(void)
         printf("ENVIADO CON ÉXITO\r\n");
         GpioWrite(&Led1, 1);
         TimerStart(&Led1Timer);
+    }
+    else
+    {
+        printf("FALLO EN LmHandlerSend AL ENVIAR\r\n");
+        //TODO: Volver a eniar conforme a MAX_ACK_RETRIES?
     }
 }
 
@@ -584,7 +628,7 @@ static void StartTxProcess(LmHandlerTxEvents_t txEvent)
     }
 }
 
-static void UplinkProcess(void)
+static void UplinkProcess(uint8_t *bufferToSend, uint8_t bufferToSendSize)
 {
     uint8_t isPending = 0;
     CRITICAL_SECTION_BEGIN();
@@ -593,7 +637,7 @@ static void UplinkProcess(void)
     CRITICAL_SECTION_END();
     if (isPending == 1)
     {
-        PrepareTxFrame();
+        PrepareTxFrame(bufferToSend, bufferToSendSize);
     }
 }
 
@@ -665,4 +709,38 @@ static void OnLedBeaconTimerEvent(void *context)
     TimerStart(&Led2Timer);
 
     TimerStart(&LedBeaconTimer);
+}
+
+/*!
+ * \brief Retransmit the msg if the ACK was not confirmed
+ */
+void acksRetransmision(void)
+{
+    if (unconfirmedAck)
+    { //Si el mensaje no fue confirmado volver a enviarlo la cantidad de veces que diga la variable MAX_ACK_RETRIES
+        uint8_t retries = 1;
+        while (retries < (MAX_ACK_RETRIES + 1))
+        {
+            printf("Reenvio #%u por ACK no confirmado\r\n", retries);
+            if (unconfirmedAck == true)
+            {
+                UplinkProcess(bufferToSend, bufferToSendSize);
+            }
+            else
+            {
+                return;
+            }
+            retries++;
+        }
+        if (retries == 4) //Sginifica que en 3 intentos no se pudo, entonces destruimos la sesión
+        {
+            //Destruir sesión
+            printf("Se llegó a la máxima cantidad de intentos fallidos... Se destruirá la sesión\r\n");
+            uplinkRequire = false;
+        }
+        else
+        {
+            printf("Reenviado con éxito\r\n");
+        }
+    }
 }
