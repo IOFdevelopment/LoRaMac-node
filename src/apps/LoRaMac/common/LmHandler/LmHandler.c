@@ -664,7 +664,7 @@ LmHandlerErrorStatus_t LmHandlerSend(LmHandlerAppData_t *appData, LmHandlerMsgTy
         // The network isn't joined, try again.
         printf("El dispositivo no esta unido a la red, uniendose... \r\n");
         LmHandlerJoinRequest(CommissioningParams.IsOtaaActivation);
-        DelayMs(2000); //Espero hasta que termine de joinearse
+        //DelayMs(2000); //Espero hasta que termine de joinearse
         if (LmHandlerJoinStatus() != LORAMAC_HANDLER_SET) //Si no se pudovolver a unir retorno error, sino sigo para enviar lo requerido
         {
             return LORAMAC_HANDLER_ERROR;

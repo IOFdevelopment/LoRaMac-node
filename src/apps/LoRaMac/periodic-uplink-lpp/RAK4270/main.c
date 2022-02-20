@@ -43,7 +43,7 @@
 #include "secure-element.h"
 
 #include "iofHandler.h"
-#include "iofLoRaWAN.h"
+//#include "iofLoRaWAN.h"
 
 #ifndef ACTIVE_REGION
 
