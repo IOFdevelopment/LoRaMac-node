@@ -89,8 +89,7 @@ const char *EventInfoStatusStrings[] =
  * \param size   Buffer size to be printed
  */
 
-/* Variable to know if the msg is CONFIRMED - ACK (false) or UNCONFIRMED - NACK (true) */
-bool unconfirmedAck = false;
+extern bool unconfirmedAck;
 
 void PrintHexBuffer(uint8_t *buffer, uint8_t size)
 {
